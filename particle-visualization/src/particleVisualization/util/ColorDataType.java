@@ -1,4 +1,4 @@
-package FileUtil;
+package particleVisualization.util;
 
 public enum ColorDataType {
 	NONE,
