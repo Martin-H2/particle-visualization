@@ -20,7 +20,7 @@ public class Main {
 
 		try {
 			MmpldData particleData = MmpldData.parseFrom(MMPLD_FILENAME);
-			SimpleObjectViewer viewer = new SimpleObjectViewer(new ParticleField(particleData));
+			SimpleObjectViewer viewer = new SimpleObjectViewer(1280, 720, new ParticleField(particleData));
 
 			try {
 				viewer.setup();

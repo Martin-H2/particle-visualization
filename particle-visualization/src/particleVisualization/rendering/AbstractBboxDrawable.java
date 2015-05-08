@@ -38,6 +38,7 @@ public abstract class AbstractBboxDrawable extends Drawable {
 		if (drawAxes) {
 			drawAxes();
 		}
+		GL11.glTranslatef((bboxMin.x-bboxMax.x)/2, (bboxMin.y-bboxMax.y)/2, (bboxMin.z-bboxMax.z)/2);
 		if (drawBbox) {
 			drawBbox();
 		}

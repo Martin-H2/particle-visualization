@@ -24,13 +24,15 @@ public class MmpldData {
 	private final Vector3f boxMax;
 	private final List<Vector3f[]> dataFrames;
 	private final Vector4f globalRgba;
+	private final int maxParticlesPerFrame;
 
 
-	public MmpldData(Vector3f boxMin, Vector3f boxMax, List<Vector3f[]> dataFrames, Vector4f globalRgba) {
+	public MmpldData(Vector3f boxMin, Vector3f boxMax, List<Vector3f[]> dataFrames, Vector4f globalRgba, int maxParticlesPerFrame) {
 		this.boxMin = boxMin;
 		this.boxMax = boxMax;
 		this.dataFrames = dataFrames;
 		this.globalRgba = globalRgba;
+		this.maxParticlesPerFrame = maxParticlesPerFrame;
 	}
 
 
@@ -46,6 +48,9 @@ public class MmpldData {
 	}
 	public Vector4f getGlobalRgba() {
 		return globalRgba;
+	}
+	public int getMaxParticlesPerFrame() {
+		return maxParticlesPerFrame;
 	}
 
 
@@ -92,6 +97,7 @@ public class MmpldData {
 		}
 
 		Vector4f globalRgba = null;
+		int maxParticlesPerFrame = 0;
 
 		List<Vector3f[]> dataFrames = new ArrayList<Vector3f[]>(numberOfDataFrames);
 		int numFramesProcessed = 0;
@@ -129,6 +135,7 @@ public class MmpldData {
 			}
 
 			int pCount = (int) readLongLE(fileStream);
+			maxParticlesPerFrame = Math.max(pCount, maxParticlesPerFrame);
 			//			System.out.println("particle count: " + pCount);
 
 			if (vertexDataType!=VertexDataType.NONE) {
@@ -153,7 +160,7 @@ public class MmpldData {
 		}
 
 		fileStream.close();
-		return new MmpldData(boxMin, boxMax, dataFrames, globalRgba);
+		return new MmpldData(boxMin, boxMax, dataFrames, globalRgba, maxParticlesPerFrame);
 	}
 
 
@@ -186,6 +193,8 @@ public class MmpldData {
 		dataInput.readFully(bytes);
 		return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
 	}
+
+
 
 
 }

@@ -32,7 +32,7 @@ public abstract class Drawable {
 	}
 
 	public void resetTransRot() {
-		translation.set(0, 0, 0);
+		translation.set(0, 0, -5);
 		roll = 0;
 		pitch = 0;
 		yaw = 0;

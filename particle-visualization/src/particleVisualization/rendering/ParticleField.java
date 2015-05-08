@@ -11,27 +11,32 @@ import particleVisualization.model.MmpldData;
 
 public class ParticleField extends AbstractBboxDrawable {
 
-	private List<Vector3f[]> dataFrames;
+	private final List<Vector3f[]> dataFrames;
 	private int currentFrameIndex = 0;
-	private Vector4f globalRgba;
-	private int maxParticles = 1000;
+	private final Vector4f globalRgba;
+	private int maxParticlesDisplayed = 1000;
+	private final int maxParticlesPerFrame;
+
+	public void increaseMaxParticles(int maxParticlesInc) {
+		maxParticlesDisplayed += maxParticlesInc;
+		if (maxParticlesDisplayed<0) {
+			maxParticlesDisplayed=1;
+		}
+		if (maxParticlesDisplayed>maxParticlesPerFrame) {
+			maxParticlesDisplayed=maxParticlesPerFrame;
+		}
+	}
 
 	public ParticleField(MmpldData particleData) {
 		super(particleData.getBoxMin(), particleData.getBoxMax());
 		dataFrames = particleData.getDataFrames();
 		globalRgba = particleData.getGlobalRgba();
-		setDrawAxes(true);
+		maxParticlesPerFrame = particleData.getMaxParticlesPerFrame();
+		setDrawAxes(false);
 		setDrawBbox(true);
 		resetTransRot();
 	}
 
-	@Override
-	public void resetTransRot() {
-		translation.set((bboxMin.x-bboxMax.x)/2, 0, -7);
-		roll = 0;
-		pitch = 0;
-		yaw = 0;
-	}
 
 	@Override
 	public void updateModel() {
@@ -41,10 +46,6 @@ public class ParticleField extends AbstractBboxDrawable {
 
 	@Override
 	public void drawGeometry() {
-		Vector3f[] currentFrame = dataFrames.get(currentFrameIndex);
-		if (maxParticles==-1) {
-			maxParticles = currentFrame.length;
-		}
 		final float r=globalRgba.getX(), g=globalRgba.getY(), b=globalRgba.getZ(), a=globalRgba.getW();
 		float aFade = a-0.5f;
 
@@ -60,7 +61,7 @@ public class ParticleField extends AbstractBboxDrawable {
 				Vector3f[] previousFrame = dataFrames.get(f-1);
 				for (int i=0; i<frameIter.length; i++) {
 					Vector3f v = frameIter[i];
-					if (v==null || i==maxParticles) {
+					if (v==null || i==maxParticlesDisplayed) {
 						break;
 					}
 					Vector3f u = previousFrame[i];
@@ -79,9 +80,10 @@ public class ParticleField extends AbstractBboxDrawable {
 		if(globalRgba!=null) {
 			GL11.glColor4f(r,g,b,a);
 		}
+		Vector3f[] currentFrame = dataFrames.get(currentFrameIndex);
 		for (int i=0; i<currentFrame.length; i++) {
 			Vector3f v = currentFrame[i];
-			if (v==null || i==maxParticles) {
+			if (v==null || i==maxParticlesDisplayed) {
 				break;
 			}
 			GL11.glVertex3f(v.getX(), v.getY(), v.getZ());
@@ -90,6 +92,13 @@ public class ParticleField extends AbstractBboxDrawable {
 
 		//glGetFloat(GL_POINT_SIZE);
 		//glPointSize(pointSize / 1.01f);
+
 	}
+
+	public int getParticleCount() {
+		return maxParticlesDisplayed;
+	}
+
+
 
 }
