@@ -1,6 +1,7 @@
 package particleVisualization.model;
 
 import java.io.DataInput;
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -62,8 +63,8 @@ public class MmpldData {
 
 
 
-	public static MmpldData parseFrom(String fileName) throws DataFormatException, IOException {
-		RandomAccessFile fileStream = new RandomAccessFile(fileName, "r");
+	public static MmpldData parseFrom(File mmpldFile) throws DataFormatException, IOException {
+		RandomAccessFile fileStream = new RandomAccessFile(mmpldFile, "r");
 
 		String header = readAsciiString(fileStream, 6);
 		if(header.startsWith("MMPLD")) {

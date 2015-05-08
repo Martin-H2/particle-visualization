@@ -3,6 +3,8 @@ package particleVisualization;
 import static org.lwjgl.opengl.GL11.glGetError;
 import static org.lwjgl.util.glu.GLU.gluErrorString;
 
+import java.io.File;
+
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.GL11;
 
@@ -13,13 +15,15 @@ import particleVisualization.rendering.SimpleObjectViewer;
 
 public class Main {
 
-	private static final String MMPLD_FILENAME = "D:/tools/MegaMol/blasen_all.mmpld";	//TODO: use program parameter etc.
-
-
 	public static void main(String[] args) {
 
+		if (args.length<1) {
+			System.err.println(".mmpld file needed as parameter");
+			return;
+		}
+
 		try {
-			MmpldData particleData = MmpldData.parseFrom(MMPLD_FILENAME);
+			MmpldData particleData = MmpldData.parseFrom(new File(args[0]));
 			SimpleObjectViewer viewer = new SimpleObjectViewer(1280, 720, new ParticleField(particleData));
 
 			try {

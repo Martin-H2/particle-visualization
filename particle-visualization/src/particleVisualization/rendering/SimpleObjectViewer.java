@@ -168,8 +168,8 @@ public class SimpleObjectViewer {
 		GL11.glBegin(GL11.GL_QUADS);
 		GL11.glColor4f(0.5f, 0.5f, 0.5f, 0.5f);
 		GL11.glVertex2f(overlayLeftMargin, 0);
-		GL11.glVertex2f(overlayLeftMargin, wHeight);
-		GL11.glVertex2f(wWidth, wHeight);
+		GL11.glVertex2f(overlayLeftMargin, 50);
+		GL11.glVertex2f(wWidth, 50);
 		GL11.glVertex2f(wWidth, 0);
 		GL11.glEnd();
 
