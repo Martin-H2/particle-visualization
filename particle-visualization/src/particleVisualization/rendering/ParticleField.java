@@ -11,12 +11,17 @@ import particleVisualization.model.MmpldData;
 
 public class ParticleField extends AbstractBboxDrawable {
 
+	private static final float SPEEDLINE_STARTING_TRANS = 0.5f;
+	private static final float SPEEDLINE_TRANS_DEC = 0.01f;
+
 	private final List<Vector3f[]> dataFrames;
 	private int currentFrameIndex = 0;
 
 	private final Vector4f globalRgba;
 	private int maxParticlesDisplayed = 1000;
 	private final int maxParticlesPerFrame;
+	private int numberOfDrawnObjects;
+	private boolean paused = false;
 
 	public void increaseMaxParticles(int maxParticlesInc) {
 		maxParticlesDisplayed += maxParticlesInc;
@@ -42,18 +47,21 @@ public class ParticleField extends AbstractBboxDrawable {
 	@Override
 	public void updateModel() {
 		//TODO data-frame timing
-		currentFrameIndex = (currentFrameIndex+1) % dataFrames.size();
+		if (!paused) {
+			currentFrameIndex = (currentFrameIndex+1) % dataFrames.size();
+		}
 	}
 
 	@Override
 	public void drawGeometry() {
+		numberOfDrawnObjects  = 0;
 		final float r=globalRgba.getX(), g=globalRgba.getY(), b=globalRgba.getZ(), a=globalRgba.getW();
-		float aFade = a-0.5f;
+		float aFade = SPEEDLINE_STARTING_TRANS;
 
 		if (currentFrameIndex>0) {
 			GL11.glBegin(GL11.GL_LINES);
 			for (int f=currentFrameIndex; f>0; f--) {
-				aFade = aFade - 0.01f;
+				aFade -= SPEEDLINE_TRANS_DEC;
 				if (aFade<=0) {
 					break;
 				}
@@ -69,6 +77,7 @@ public class ParticleField extends AbstractBboxDrawable {
 					if (v.x>u.x && Math.abs(v.z-u.z)<0.4) {
 						GL11.glVertex3f(v.x, v.y, v.z);
 						GL11.glVertex3f(u.x, u.y, u.z);
+						numberOfDrawnObjects++;
 					}
 				}
 
@@ -88,6 +97,7 @@ public class ParticleField extends AbstractBboxDrawable {
 				break;
 			}
 			GL11.glVertex3f(v.getX(), v.getY(), v.getZ());
+			numberOfDrawnObjects++;
 		}
 		GL11.glEnd();
 
@@ -105,7 +115,15 @@ public class ParticleField extends AbstractBboxDrawable {
 	public int getNumberOfFrames() {
 		return dataFrames.size();
 	}
+	public int getNumberOfSpeedlineSegments() {
+		return (int) (SPEEDLINE_STARTING_TRANS / SPEEDLINE_TRANS_DEC - 1);
+	}
+	public int getNumberOfDrawnObjects() {
+		return numberOfDrawnObjects;
+	}
 
-
+	public void togglePause() {
+		paused = !paused;
+	}
 
 }

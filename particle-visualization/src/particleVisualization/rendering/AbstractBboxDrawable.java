@@ -10,6 +10,7 @@ public abstract class AbstractBboxDrawable extends Drawable {
 	final Vector3f bboxMax;
 	boolean drawBbox = false;
 	boolean drawAxes = false;
+	Vector3f translationBuf = new Vector3f();
 
 
 	public AbstractBboxDrawable(Vector3f bboxMin, Vector3f bboxMax){
@@ -23,9 +24,16 @@ public abstract class AbstractBboxDrawable extends Drawable {
 	public void setDrawAxes(boolean drawAxes) {
 		this.drawAxes = drawAxes;
 	}
+	public void toggleAxes() {
+		drawAxes = !drawAxes;
+	}
+	public void toggleBbox() {
+		drawBbox = !drawBbox;
+	}
 
 	@Override
 	public void draw() {
+		applySmoothTranslationStep(0.2f);
 		GL11.glLoadIdentity();
 		GL11.glTranslatef(translation.x, translation.y, translation.z);
 		// ZYX orientation method (first roll, then pitch and at the end yaw)
@@ -48,7 +56,20 @@ public abstract class AbstractBboxDrawable extends Drawable {
 		drawGeometry();
 	}
 
+	private void applySmoothTranslationStep(float fractionPerFrame) {
+		translation.x += translationBuf.x * fractionPerFrame;
+		translationBuf.x -= translationBuf.x * fractionPerFrame;
+		translation.y += translationBuf.y * fractionPerFrame;
+		translationBuf.y -= translationBuf.y * fractionPerFrame;
+		translation.z += translationBuf.z * fractionPerFrame;
+		translationBuf.z -= translationBuf.z * fractionPerFrame;
+	}
 
+	public void translateSmooth(float x, float y, float z) {
+		translationBuf.x += x;
+		translationBuf.y += y;
+		translationBuf.z += z;
+	}
 
 	abstract public void drawGeometry();
 

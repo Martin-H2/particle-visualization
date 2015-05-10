@@ -1,6 +1,8 @@
 package particleVisualization.rendering;
 
 import java.awt.Font;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
@@ -30,12 +32,15 @@ public class SimpleObjectViewer {
 	private long framesRendered;
 	private Stopwatch fpsStopwatch;
 
+	private Set<Integer> keysHoldDown;
+
 
 	public SimpleObjectViewer(int windowWidth, int windowHeight, ParticleField sceneObject) {
 		particleField = sceneObject;
 		wWidth = windowWidth;
 		wHeight = windowHeight;
 		overlayLeftMargin = wWidth-130;
+		keysHoldDown = new HashSet<Integer>();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -110,6 +115,8 @@ public class SimpleObjectViewer {
 		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 
 		GL11.glHint(GL11.GL_PERSPECTIVE_CORRECTION_HINT, GL11.GL_NICEST);
+		GL11.glEnable (GL11.GL_LINE_SMOOTH);
+		GL11.glHint (GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
 	}
 
 
@@ -117,11 +124,13 @@ public class SimpleObjectViewer {
 		// Keyboard
 		if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)) { shutdownRequest  = true; }
 
-		if (Keyboard.isKeyDown(Keyboard.KEY_SPACE)) { particleField.resetTransRot(); }
+		if (isKeyDownEvent(Keyboard.KEY_A)) { particleField.toggleAxes(); }
+		if (isKeyDownEvent(Keyboard.KEY_B)) { particleField.toggleBbox(); }
+		if (Keyboard.isKeyDown(Keyboard.KEY_R)) { particleField.resetTransRot(); }
+		if (isKeyDownEvent(Keyboard.KEY_SPACE)) { particleField.togglePause(); }
 
 		if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) { particleField.addPitch(-1); }
 		if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) { particleField.addPitch(1); }
-
 		if (Keyboard.isKeyDown(Keyboard.KEY_UP)) { particleField.addYaw(-1); }
 		if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) { particleField.addYaw(1); }
 
@@ -133,10 +142,20 @@ public class SimpleObjectViewer {
 			particleField.addPitch(Mouse.getDX()/3.0f);
 			particleField.addYaw(-Mouse.getDY()/3.0f);
 		}
+		particleField.translateSmooth(0, 0, Mouse.getDWheel()/500.0f);
 
-		particleField.translate(0, 0, Mouse.getDWheel()/800.0f);
+		for (int key: keysHoldDown) {
+			if (!Keyboard.isKeyDown(key)) {
+				keysHoldDown.remove(key);
+			}
+		}
 	}
 
+
+	private boolean isKeyDownEvent(int key) {
+		if(Keyboard.isKeyDown(key)) return keysHoldDown.add(key);
+		else return false;
+	}
 
 	private void updateModel() {
 		particleField.updateModel();
@@ -166,16 +185,18 @@ public class SimpleObjectViewer {
 		GL11.glLoadIdentity();
 
 		GL11.glBegin(GL11.GL_QUADS);
-		GL11.glColor4f(0.5f, 0.5f, 0.5f, 0.5f);
+		GL11.glColor4f(0.3f, 0.3f, 0.3f, 0.5f);
 		GL11.glVertex2f(overlayLeftMargin, 0);
-		GL11.glVertex2f(overlayLeftMargin, 80);
-		GL11.glVertex2f(wWidth, 80);
+		GL11.glVertex2f(overlayLeftMargin, 110);
+		GL11.glVertex2f(wWidth, 110);
 		GL11.glVertex2f(wWidth, 0);
 		GL11.glEnd();
 
 		uFont.drawString(overlayLeftMargin+5, 10, "fps: " + Math.round(getFps()));
-		uFont.drawString(overlayLeftMargin+5, 25, "particles: " + particleField.getParticleCount());
-		uFont.drawString(overlayLeftMargin+5, 40, "frame: " + particleField.getCurrentFrameIndex() + "/" + particleField.getNumberOfFrames());
+		uFont.drawString(overlayLeftMargin+5, 25, "frame: " + particleField.getCurrentFrameIndex() + "/" + particleField.getNumberOfFrames());
+		uFont.drawString(overlayLeftMargin+5, 40, "particles: " + particleField.getParticleCount());
+		uFont.drawString(overlayLeftMargin+5, 55, "lineSegments: " + particleField.getNumberOfSpeedlineSegments());
+		uFont.drawString(overlayLeftMargin+5, 70, "#objects: " + particleField.getNumberOfDrawnObjects());
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
