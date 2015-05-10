@@ -168,13 +168,14 @@ public class SimpleObjectViewer {
 		GL11.glBegin(GL11.GL_QUADS);
 		GL11.glColor4f(0.5f, 0.5f, 0.5f, 0.5f);
 		GL11.glVertex2f(overlayLeftMargin, 0);
-		GL11.glVertex2f(overlayLeftMargin, 50);
-		GL11.glVertex2f(wWidth, 50);
+		GL11.glVertex2f(overlayLeftMargin, 80);
+		GL11.glVertex2f(wWidth, 80);
 		GL11.glVertex2f(wWidth, 0);
 		GL11.glEnd();
 
 		uFont.drawString(overlayLeftMargin+5, 10, "fps: " + Math.round(getFps()));
 		uFont.drawString(overlayLeftMargin+5, 25, "particles: " + particleField.getParticleCount());
+		uFont.drawString(overlayLeftMargin+5, 40, "frame: " + particleField.getCurrentFrameIndex() + "/" + particleField.getNumberOfFrames());
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 
 		GL11.glMatrixMode(GL11.GL_PROJECTION);

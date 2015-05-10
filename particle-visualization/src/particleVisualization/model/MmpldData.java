@@ -1,11 +1,11 @@
 package particleVisualization.model;
 
-import java.io.DataInput;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +18,12 @@ import particleVisualization.util.ColorDataType;
 import particleVisualization.util.Stopwatch;
 import particleVisualization.util.VertexDataType;
 
-
 public class MmpldData {
+
+	protected static final int MAX_FRAMES_READ = 3000;
+	protected static final boolean READ_PARALLEL = true;
+	//private static final Logger log = Logger.getLogger( MmpldData.class.getName() );
+
 
 	private final Vector3f boxMin;
 	private final Vector3f boxMax;
@@ -63,139 +67,219 @@ public class MmpldData {
 
 
 
-	public static MmpldData parseFrom(File mmpldFile) throws DataFormatException, IOException {
-		RandomAccessFile fileStream = new RandomAccessFile(mmpldFile, "r");
+	public static MmpldData parseFrom(File mmpldFile) throws DataFormatException, IOException, InterruptedException {
+		FileInputStream fileInputStream = new FileInputStream(mmpldFile);
+		FileChannel fileInputChannel = fileInputStream.getChannel();
+		MmpldData mmpldData = null;
 
-		String header = readAsciiString(fileStream, 6);
-		if(header.startsWith("MMPLD")) {
+
+		// 60 byte HEADER
+		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(60).order(ByteOrder.LITTLE_ENDIAN);
+		fileInputChannel.read(byteBuffer);
+		byteBuffer.flip();
+
+		String magicId = readAsciiString(byteBuffer, 6);
+		if(magicId.startsWith("MMPLD")) {
 			System.out.println("found MMPLD header...");
 		} else throw new DataFormatException("MMPLD header not found.");
 
-		short versionNumber = readShortLE(fileStream);
+		short versionNumber = byteBuffer.getShort();
 		if(versionNumber == 100) {
 			System.out.println("found correct version number (" + versionNumber + ") ...");
 		} else throw new DataFormatException("MMPLD file has wrong version.");
 
-		int numberOfDataFrames = readIntLE(fileStream);
+		int numberOfDataFrames = byteBuffer.getInt();
 		if (numberOfDataFrames >= 1) {
 			System.out.println("number of dataFrames: " + numberOfDataFrames);
 		} else throw new DataFormatException("MMPLD file has not enough dataFames");
 
-
 		System.out.println("Data set BoundingBox:"
-				+ "\n	MIN:	" + readFloatLE(fileStream) + " / " + readFloatLE(fileStream) + " / " + readFloatLE(fileStream)
-				+ "\n	MAX:	" + readFloatLE(fileStream) + " / " + readFloatLE(fileStream) + " / " + readFloatLE(fileStream));
+				+ "\n	MIN:	" + byteBuffer.getFloat() + " / " + byteBuffer.getFloat() + " / " + byteBuffer.getFloat()
+				+ "\n	MAX:	" + byteBuffer.getFloat() + " / " + byteBuffer.getFloat() + " / " + byteBuffer.getFloat());
 
-		Vector3f boxMin = new Vector3f(readFloatLE(fileStream), readFloatLE(fileStream), readFloatLE(fileStream));
-		Vector3f boxMax = new Vector3f(readFloatLE(fileStream), readFloatLE(fileStream), readFloatLE(fileStream));
+		Vector3f boxMin = new Vector3f(byteBuffer.getFloat(), byteBuffer.getFloat(), byteBuffer.getFloat());
+		Vector3f boxMax = new Vector3f(byteBuffer.getFloat(), byteBuffer.getFloat(), byteBuffer.getFloat());
 		System.out.println("Data set ClippingBox:"
-				+ "\n	MIN:	" + boxMin.toString()
-				+ "\n	MAX:	" + boxMax.toString());
+				+ "\n	MIN:	" + boxMin.getX() + " / " + boxMin.getY() + " / " + boxMin.getZ()
+				+ "\n	MAX:	" + boxMax.getX() + " / " + boxMax.getY() + " / " + boxMax.getZ());
 
-		long[] seekTable = new long[numberOfDataFrames];
-		for (int i=0; i<numberOfDataFrames; i++) {
-			seekTable[i] = readLongLE(fileStream);
+		// SEEK TABLE
+		byteBuffer = ByteBuffer.allocateDirect((numberOfDataFrames+1)*8).order(ByteOrder.LITTLE_ENDIAN);
+		fileInputChannel.read(byteBuffer);
+		byteBuffer.flip();
+		System.out.println("reading " + byteBuffer.capacity()/1024 + " kb long seek-table...");
+		long[] seekTable = new long[numberOfDataFrames+1];
+		for (int i=0; i<numberOfDataFrames+1; i++) {
+			seekTable[i] = byteBuffer.getLong();
 		}
+
 
 		Vector4f globalRgba = null;
 		int maxParticlesPerFrame = 0;
-
 		List<Vector3f[]> dataFrames = new ArrayList<Vector3f[]>(numberOfDataFrames);
-		int numFramesProcessed = 0;
 		Stopwatch stopwatch = new Stopwatch();
+
 		System.out.println("reading data-frames...");
-		for (long frameByteOffset: seekTable) {
-			//			System.out.println("================== FRAME parse ====================");
 
-			//			System.out.println("frameByteOffset: " + frameByteOffset);
-			fileStream.seek(frameByteOffset);
 
-			fileStream.skipBytes(4);
-			//int frameNumber = readIntLE(fileStream);
-			//			System.out.println("frame number: " + frameNumber);
 
-			VertexDataType vertexDataType = VertexDataType.enumCache[fileStream.readByte()];
-			//			System.out.println("vertex data type: " + vertexDataType);
 
-			ColorDataType colorDataType = ColorDataType.enumCache[fileStream.readByte()];
-			//			System.out.println("color data type: " + colorDataType);
+		// 1st DATA FRAME
+		//System.out.println("========================= frame index " + i + " =========================");
+		if (seekTable[1]-seekTable[0] != byteBuffer.capacity()) {
+			byteBuffer = ByteBuffer.allocateDirect((int) (seekTable[1]-seekTable[0])).order(ByteOrder.LITTLE_ENDIAN);
+			System.out.println("adjusting byteBuffer to next frameSize: " + byteBuffer.capacity());
+		} else {
+			byteBuffer.clear();
+		}
+		final int firstFrameSize = byteBuffer.capacity();
+		fileInputChannel.read(byteBuffer, seekTable[0]);
+		byteBuffer.flip();
 
-			float globalRadius = -1;
-			if (vertexDataType==VertexDataType.FLOAT_XYZ || vertexDataType==VertexDataType.SHORT_XYZ) {
-				globalRadius = readFloatLE(fileStream);
-				//				System.out.println("global radius: " + globalRadius);
-			}
+		byteBuffer.getInt();
+		//System.out.println("frame number: " + frameNumber);
 
-			if (colorDataType==ColorDataType.NONE) {
-				globalRgba = new Vector4f(fileStream.readUnsignedByte()/255.0f, fileStream.readUnsignedByte()/255.0f, fileStream.readUnsignedByte()/255.0f, fileStream.readUnsignedByte()/255.0f);
-				//				System.out.println("global color RGBA: " + globalRgba.toString());
-			}
-			else if (colorDataType==ColorDataType.FLOAT_I) {
-				System.out.println("global color intensity: " + readFloatLE(fileStream)
-						+ " / range: " + readFloatLE(fileStream));
-			}
+		VertexDataType vertexDataType = VertexDataType.enumCache[byteBuffer.get()];
+		//System.out.println("vertex data type: " + vertexDataType);
 
-			int pCount = (int) readLongLE(fileStream);
-			maxParticlesPerFrame = Math.max(pCount, maxParticlesPerFrame);
-			//			System.out.println("particle count: " + pCount);
+		ColorDataType colorDataType = ColorDataType.enumCache[byteBuffer.get()];
+		//System.out.println("color data type: " + colorDataType);
 
-			if (vertexDataType!=VertexDataType.NONE) {
-				//FIXME: THIS IS ONLY FOR vertex data type: FLOAT_XYZ & color data type: NONE
-				Vector3f[] particles = new Vector3f[pCount];
-				for (int p=0; p<pCount; p++) {
-					particles[p] = new Vector3f(readFloatLE(fileStream), readFloatLE(fileStream), readFloatLE(fileStream));
-					//System.out.println("particle" + p + ": " +  particles[p].toString());
-				}
-				//				System.out.println("particle #0: " + particles[0]);
-				dataFrames.add(particles);
-				//TODO: particle bounding box checks etc ?
-				//TODO: check end with fileStream.getFilePointer()
-			}
-			numFramesProcessed++;
-			if (numFramesProcessed%100 == 0) {
-				System.out.println("numFramesProcessed: " + numFramesProcessed + " (" + stopwatch.getElapsedSeconds() + "s)");
-			}
-			if (numFramesProcessed == 100) {
-				break;
-			}
+		//float globalRadius = -1;
+		if (vertexDataType==VertexDataType.FLOAT_XYZ || vertexDataType==VertexDataType.SHORT_XYZ) {
+			byteBuffer.getFloat();
+			//System.out.println("global radius: " + globalRadius);
 		}
 
-		fileStream.close();
-		return new MmpldData(boxMin, boxMax, dataFrames, globalRgba, maxParticlesPerFrame);
+		if (colorDataType==ColorDataType.NONE) {
+			globalRgba = new Vector4f(getUnsignedByte(byteBuffer), getUnsignedByte(byteBuffer), getUnsignedByte(byteBuffer), getUnsignedByte(byteBuffer));
+			//System.out.println("global color RGBA: " + globalRgba.toString());
+			globalRgba.scale(1.0f/255.0f);
+			//System.out.println("global color RGBA scaled: " + globalRgba.toString());
+		}
+		else if (colorDataType==ColorDataType.FLOAT_I) {
+			System.out.println("global color intensity: " + byteBuffer.getFloat()
+					+ " / range: " + byteBuffer.getFloat());
+		}
+
+		int pCount = (int) byteBuffer.getLong();
+		maxParticlesPerFrame = Math.max(pCount, maxParticlesPerFrame);
+		//System.out.println("particle count: " + pCount);
+
+		if (vertexDataType!=VertexDataType.NONE) {
+			//FIXME: THIS IS ONLY FOR vertex data type: FLOAT_XYZ & color data type: NONE
+			Vector3f[] particles = new Vector3f[pCount];
+			for (int p=0; p<pCount; p++) {
+				particles[p] = new Vector3f(byteBuffer.getFloat(), byteBuffer.getFloat(), byteBuffer.getFloat());
+				//System.out.println("particle" + p + ": " +  particles[p].toString());
+			}
+			//System.out.println("particle #0: " + particles[0]);
+			dataFrames.add(particles);
+		}
+
+
+
+
+
+
+		Thread frameLoader = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				ByteBuffer byteBuffer = ByteBuffer.allocateDirect(firstFrameSize).order(ByteOrder.LITTLE_ENDIAN);
+
+				// DATA FRAMES
+				for (int i=1; i<numberOfDataFrames; i++) {
+					if (seekTable[i+1]-seekTable[i] != byteBuffer.capacity()) {
+						byteBuffer = ByteBuffer.allocateDirect((int) (seekTable[i+1]-seekTable[i])).order(ByteOrder.LITTLE_ENDIAN);
+						System.out.println("adjusting byteBuffer to next frameSize: " + byteBuffer.capacity());
+					} else {
+						byteBuffer.clear();
+					}
+					try {
+						fileInputChannel.read(byteBuffer, seekTable[i]);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+					byteBuffer.flip();
+					byteBuffer.getInt();
+					VertexDataType vertexDataType = VertexDataType.enumCache[byteBuffer.get()];
+					ColorDataType colorDataType = ColorDataType.enumCache[byteBuffer.get()];
+					if (vertexDataType==VertexDataType.FLOAT_XYZ || vertexDataType==VertexDataType.SHORT_XYZ) {
+						byteBuffer.getFloat();
+					}
+
+					if (colorDataType==ColorDataType.NONE) {
+						byteBuffer.get();
+						byteBuffer.get();
+						byteBuffer.get();
+						byteBuffer.get();
+					}
+					else if (colorDataType==ColorDataType.FLOAT_I) {
+						System.out.println("global color intensity: " + byteBuffer.getFloat()
+								+ " / range: " + byteBuffer.getFloat());
+					}
+
+					int pCount = (int) byteBuffer.getLong();
+
+					if (vertexDataType!=VertexDataType.NONE) {
+						//FIXME: THIS IS ONLY FOR vertex data type: FLOAT_XYZ & color data type: NONE
+						Vector3f[] particles = new Vector3f[pCount];
+						for (int p=0; p<pCount; p++) {
+							particles[p] = new Vector3f(byteBuffer.getFloat(), byteBuffer.getFloat(), byteBuffer.getFloat());
+							//System.out.println("particle" + p + ": " +  particles[p].toString());
+						}
+						//System.out.println("particle #0: " + particles[0]);
+						dataFrames.add(particles);
+					}
+					if (READ_PARALLEL) {
+						Thread.yield();
+						if ((i+1)%30 == 0) {
+							//						System.out.println("framesProcessed: " + (i+1) + " (" + stopwatch.getElapsedSeconds() + "s)");
+							//						break;
+							try {
+								Thread.sleep(500);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					if (i+1==MAX_FRAMES_READ) {
+						break;
+					}
+				}
+				try {
+					fileInputChannel.close();
+					fileInputStream.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}, "frameLoaderThread");
+
+		if (READ_PARALLEL) {
+			frameLoader.setDaemon(true);
+			frameLoader.setPriority(Thread.MIN_PRIORITY);
+			frameLoader.start();
+		} else {
+			frameLoader.run();
+		}
+
+		mmpldData = new MmpldData(boxMin, boxMax, dataFrames, globalRgba, maxParticlesPerFrame);
+
+		return mmpldData;
 	}
 
 
-	private static String readAsciiString(DataInput dataInput, int numberOfBytes) throws IOException {
+	private static String readAsciiString(ByteBuffer byteBuffer, int numberOfBytes) throws IOException {
 		byte[] bytes = new byte[numberOfBytes];
-		dataInput.readFully(bytes);
+		byteBuffer.get(bytes);
 		return new String(bytes, StandardCharsets.US_ASCII);
 	}
 
-	private static short readShortLE(DataInput dataInput) throws IOException {
-		byte[] bytes = new byte[2];
-		dataInput.readFully(bytes);
-		return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getShort();
+	public static short getUnsignedByte(ByteBuffer bb) {
+		return ((short)(bb.get() & 0xff));
 	}
-
-	private static int readIntLE(DataInput dataInput) throws IOException {
-		byte[] bytes = new byte[4];
-		dataInput.readFully(bytes);
-		return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getInt();
-	}
-
-	private static long readLongLE(DataInput dataInput) throws IOException {
-		byte[] bytes = new byte[8];
-		dataInput.readFully(bytes);
-		return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getLong();
-	}
-
-	private static float readFloatLE(DataInput dataInput) throws IOException {
-		byte[] bytes = new byte[4];
-		dataInput.readFully(bytes);
-		return ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).getFloat();
-	}
-
-
 
 
 }

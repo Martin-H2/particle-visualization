@@ -13,6 +13,7 @@ public class ParticleField extends AbstractBboxDrawable {
 
 	private final List<Vector3f[]> dataFrames;
 	private int currentFrameIndex = 0;
+
 	private final Vector4f globalRgba;
 	private int maxParticlesDisplayed = 1000;
 	private final int maxParticlesPerFrame;
@@ -97,6 +98,12 @@ public class ParticleField extends AbstractBboxDrawable {
 
 	public int getParticleCount() {
 		return maxParticlesDisplayed;
+	}
+	public int getCurrentFrameIndex() {
+		return currentFrameIndex;
+	}
+	public int getNumberOfFrames() {
+		return dataFrames.size();
 	}
 
 
