@@ -7,9 +7,14 @@ import java.util.Set;
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.AMDDebugOutput;
+import org.lwjgl.opengl.AMDDebugOutputCallback;
+import org.lwjgl.opengl.ARBDebugOutput;
+import org.lwjgl.opengl.ARBDebugOutputCallback;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GLContext;
 import org.lwjgl.util.glu.GLU;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.UnicodeFont;
@@ -85,6 +90,7 @@ public class SimpleObjectViewer {
 	}
 
 	private void createWindow() throws LWJGLException {
+		System.out.println("\nCreating openGL context and window...");
 		//System.setProperty("org.lwjgl.opengl.Window.undecorated", "true");	//pseudo fullscreen for window mode
 		displayMode = new DisplayMode(wWidth, wHeight);
 		Display.setDisplayMode(displayMode);
@@ -92,6 +98,17 @@ public class SimpleObjectViewer {
 		Display.setTitle("Particle Visualization");
 		Display.setLocation(20, 8);
 		Display.create();
+		System.out.println("supported openGL version: " + GL11.glGetString(GL11.GL_VERSION));
+
+		if ( GLContext.getCapabilities().GL_ARB_debug_output ) {
+			System.out.println("registering ARBDebugOutputCallback");
+			ARBDebugOutput.glDebugMessageCallbackARB(new ARBDebugOutputCallback());
+		} else if ( GLContext.getCapabilities().GL_AMD_debug_output ) {
+			System.out.println("registering AMDDebugOutputCallback");
+			AMDDebugOutput.glDebugMessageCallbackAMD(new AMDDebugOutputCallback());
+		} else {
+			System.err.println("no ARB/AMD debug output capabilities");
+		}
 	}
 
 	private void setupOpenGL() {
@@ -213,7 +230,7 @@ public class SimpleObjectViewer {
 
 	public void cleanup() {
 		//release textures...
-		Display.destroy();
+		//Display.destroy();
 	}
 
 

@@ -15,7 +15,6 @@ import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import particleVisualization.util.ColorDataType;
-import particleVisualization.util.Stopwatch;
 import particleVisualization.util.VertexDataType;
 
 public class MmpldData {
@@ -71,7 +70,7 @@ public class MmpldData {
 		FileInputStream fileInputStream = new FileInputStream(mmpldFile);
 		FileChannel fileInputChannel = fileInputStream.getChannel();
 		MmpldData mmpldData = null;
-
+		System.out.println("\nReading input file: " + mmpldFile);
 
 		// 60 byte HEADER
 		ByteBuffer byteBuffer = ByteBuffer.allocateDirect(60).order(ByteOrder.LITTLE_ENDIAN);
@@ -117,9 +116,9 @@ public class MmpldData {
 		Vector4f globalRgba = null;
 		int maxParticlesPerFrame = 0;
 		List<Vector3f[]> dataFrames = new ArrayList<Vector3f[]>(numberOfDataFrames);
-		Stopwatch stopwatch = new Stopwatch();
+		//Stopwatch stopwatch = new Stopwatch();
 
-		System.out.println("reading data-frames...");
+		System.out.println("reading 1st data-frame...");
 
 
 
@@ -258,6 +257,7 @@ public class MmpldData {
 		}, "frameLoaderThread");
 
 		if (READ_PARALLEL) {
+			System.out.println("starting dataFrame loader as daemon thread...");
 			frameLoader.setDaemon(true);
 			frameLoader.setPriority(Thread.MIN_PRIORITY);
 			frameLoader.start();
