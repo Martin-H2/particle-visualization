@@ -24,8 +24,9 @@ public class Main {
 
 		try {
 			MmpldData particleData = MmpldData.parseFrom(new File(args[0]));
-			if (particleData==null)return;
-			SimpleObjectViewer viewer = new SimpleObjectViewer(1280, 720, new ParticleField(particleData));
+			ParticleField particleField = new ParticleField(particleData);
+			SimpleObjectViewer viewer = new SimpleObjectViewer(1280, 720, particleField);
+			particleField.setViewer(viewer);
 
 			try {
 				viewer.setup();

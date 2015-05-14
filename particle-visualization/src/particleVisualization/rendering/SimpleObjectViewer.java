@@ -28,7 +28,7 @@ public class SimpleObjectViewer {
 	private UnicodeFont uFont;
 	private int overlayLeftMargin;
 
-	private double currentFps;
+	private double currentFps = 60;
 	private long framesRendered;
 	private Stopwatch fpsStopwatch;
 
@@ -80,7 +80,7 @@ public class SimpleObjectViewer {
 			fpsStopwatch.restart();
 		}
 	}
-	private double getFps() {
+	double getFps() {
 		return currentFps;
 	}
 
@@ -137,6 +137,9 @@ public class SimpleObjectViewer {
 		if (Keyboard.isKeyDown(Keyboard.KEY_I)) { particleField.increaseMaxParticles(40); }
 		if (Keyboard.isKeyDown(Keyboard.KEY_D)) { particleField.increaseMaxParticles(-40); }
 
+		if (Keyboard.isKeyDown(Keyboard.KEY_F)) { particleField.increaseDataFps(1); }
+		if (Keyboard.isKeyDown(Keyboard.KEY_S)) { particleField.increaseDataFps(-1); }
+
 		// Mouse
 		if (Mouse.isButtonDown(0)) {
 			particleField.addPitch(Mouse.getDX()/3.0f);
@@ -187,16 +190,16 @@ public class SimpleObjectViewer {
 		GL11.glBegin(GL11.GL_QUADS);
 		GL11.glColor4f(0.3f, 0.3f, 0.3f, 0.5f);
 		GL11.glVertex2f(overlayLeftMargin, 0);
-		GL11.glVertex2f(overlayLeftMargin, 110);
-		GL11.glVertex2f(wWidth, 110);
+		GL11.glVertex2f(overlayLeftMargin, 85);
+		GL11.glVertex2f(wWidth, 85);
 		GL11.glVertex2f(wWidth, 0);
 		GL11.glEnd();
 
 		uFont.drawString(overlayLeftMargin+5, 10, "fps: " + Math.round(getFps()));
-		uFont.drawString(overlayLeftMargin+5, 25, "frame: " + particleField.getCurrentFrameIndex() + "/" + particleField.getNumberOfFrames());
-		uFont.drawString(overlayLeftMargin+5, 40, "particles: " + particleField.getParticleCount());
-		uFont.drawString(overlayLeftMargin+5, 55, "lineSegments: " + particleField.getNumberOfSpeedlineSegments());
-		uFont.drawString(overlayLeftMargin+5, 70, "#objects: " + particleField.getNumberOfDrawnObjects());
+		uFont.drawString(overlayLeftMargin+5, 25, "dataFps: " + particleField.getDataFps());
+		uFont.drawString(overlayLeftMargin+5, 40, "frame: " + particleField.getCurrentFrameIndex() + "/" + particleField.getNumberOfFrames());
+		uFont.drawString(overlayLeftMargin+5, 55, "particles: " + particleField.getParticleCount());
+		uFont.drawString(overlayLeftMargin+5, 70, "objects: " + particleField.getNumberOfDrawnObjects());
 		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 
 		GL11.glMatrixMode(GL11.GL_PROJECTION);
