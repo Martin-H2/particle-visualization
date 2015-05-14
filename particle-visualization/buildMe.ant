@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project particle-visualization with libraries in sub-folder">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="D:/build/Git/particle-visualization/particle-visualization/build/mmpld_visualizer.jar">
+            <manifest>
+                <attribute name="Main-Class" value="particleVisualization.Main"/>
+                <attribute name="Class-Path" value=". lib/lwjgl.jar lib/lwjgl_util.jar lib/slick.jar"/>
+            </manifest>
+            <fileset dir="D:/build/Git/particle-visualization/particle-visualization/bin"/>
+            <fileset dir="D:/build/java/library_projects/LWJGL2/bin"/>
+        </jar>
+    	<!--<delete dir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>
+        <mkdir dir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>
+        <copy file="D:/build/java/library_projects/LWJGL2/lib/jar/lwjgl.jar" todir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>
+        <copy file="D:/build/java/library_projects/LWJGL2/lib/jar/lwjgl_util.jar" todir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>
+        <copy file="D:/build/java/library_projects/LWJGL2/lib/jar/slick.jar" todir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>-->
+    </target>
+</project>
