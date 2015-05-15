@@ -16,5 +16,8 @@
         <copy file="D:/build/java/library_projects/LWJGL2/lib/jar/lwjgl.jar" todir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>
         <copy file="D:/build/java/library_projects/LWJGL2/lib/jar/lwjgl_util.jar" todir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>
         <copy file="D:/build/java/library_projects/LWJGL2/lib/jar/slick.jar" todir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>-->
+    	<exec dir="D:/build/Git/particle-visualization/particle-visualization/build" executable="java">
+	        <arg line="-Djava.library.path='natives/' -Xmx4G -jar 'mmpld_visualizer.jar' 'D:\tools\MegaMol\blasen_all.mmpld'"/>
+	    </exec>
     </target>
 </project>

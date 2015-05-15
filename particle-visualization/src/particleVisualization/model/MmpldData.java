@@ -31,7 +31,7 @@ public class MmpldData {
 	private final int maxParticlesPerFrame;
 
 
-	public MmpldData(Vector3f boxMin, Vector3f boxMax, List<Vector3f[]> dataFrames, Vector4f globalRgba, int maxParticlesPerFrame) {
+	public MmpldData(final Vector3f boxMin, final Vector3f boxMax, final List<Vector3f[]> dataFrames, final Vector4f globalRgba, final int maxParticlesPerFrame) {
 		this.boxMin = boxMin;
 		this.boxMax = boxMax;
 		this.dataFrames = dataFrames;
@@ -66,7 +66,7 @@ public class MmpldData {
 
 
 
-	public static MmpldData parseFrom(File mmpldFile) throws DataFormatException, IOException, InterruptedException {
+	public static MmpldData parseFrom(final File mmpldFile) throws DataFormatException, IOException, InterruptedException {
 		FileInputStream fileInputStream = new FileInputStream(mmpldFile);
 		FileChannel fileInputChannel = fileInputStream.getChannel();
 		MmpldData mmpldData = null;
@@ -92,15 +92,16 @@ public class MmpldData {
 			System.out.println("number of dataFrames: " + numberOfDataFrames);
 		} else throw new DataFormatException("MMPLD file has not enough dataFames");
 
-		System.out.println("Data set BoundingBox:"
-				+ "\n	MIN:	" + byteBuffer.getFloat() + " / " + byteBuffer.getFloat() + " / " + byteBuffer.getFloat()
-				+ "\n	MAX:	" + byteBuffer.getFloat() + " / " + byteBuffer.getFloat() + " / " + byteBuffer.getFloat());
+		skipBytes(byteBuffer, 24);
+		//		System.out.println("Data set BoundingBox:"
+		//				+ "\n	MIN:	" + byteBuffer.getFloat() + " / " + byteBuffer.getFloat() + " / " + byteBuffer.getFloat()
+		//				+ "\n	MAX:	" + byteBuffer.getFloat() + " / " + byteBuffer.getFloat() + " / " + byteBuffer.getFloat());
 
 		Vector3f boxMin = new Vector3f(byteBuffer.getFloat(), byteBuffer.getFloat(), byteBuffer.getFloat());
 		Vector3f boxMax = new Vector3f(byteBuffer.getFloat(), byteBuffer.getFloat(), byteBuffer.getFloat());
-		System.out.println("Data set ClippingBox:"
-				+ "\n	MIN:	" + boxMin.getX() + " / " + boxMin.getY() + " / " + boxMin.getZ()
-				+ "\n	MAX:	" + boxMax.getX() + " / " + boxMax.getY() + " / " + boxMax.getZ());
+		//		System.out.println("Data set ClippingBox:"
+		//				+ "\n	MIN:	" + boxMin.getX() + " / " + boxMin.getY() + " / " + boxMin.getZ()
+		//				+ "\n	MAX:	" + boxMax.getX() + " / " + boxMax.getY() + " / " + boxMax.getZ());
 
 		// SEEK TABLE
 		byteBuffer = ByteBuffer.allocateDirect((numberOfDataFrames+1)*8).order(ByteOrder.LITTLE_ENDIAN);
@@ -135,7 +136,7 @@ public class MmpldData {
 		fileInputChannel.read(byteBuffer, seekTable[0]);
 		byteBuffer.flip();
 
-		byteBuffer.getInt();
+		skipBytes(byteBuffer, 4);
 		//System.out.println("frame number: " + frameNumber);
 
 		VertexDataType vertexDataType = VertexDataType.enumCache[byteBuffer.get()];
@@ -146,7 +147,7 @@ public class MmpldData {
 
 		//float globalRadius = -1;
 		if (vertexDataType==VertexDataType.FLOAT_XYZ || vertexDataType==VertexDataType.SHORT_XYZ) {
-			byteBuffer.getFloat();
+			skipBytes(byteBuffer, 4);
 			//System.out.println("global radius: " + globalRadius);
 		}
 
@@ -200,18 +201,14 @@ public class MmpldData {
 						e.printStackTrace();
 					}
 					byteBuffer.flip();
-					byteBuffer.getInt();
+					skipBytes(byteBuffer, 4);
 					VertexDataType vertexDataType = VertexDataType.enumCache[byteBuffer.get()];
 					ColorDataType colorDataType = ColorDataType.enumCache[byteBuffer.get()];
 					if (vertexDataType==VertexDataType.FLOAT_XYZ || vertexDataType==VertexDataType.SHORT_XYZ) {
-						byteBuffer.getFloat();
+						skipBytes(byteBuffer, 4);
 					}
-
 					if (colorDataType==ColorDataType.NONE) {
-						byteBuffer.get();
-						byteBuffer.get();
-						byteBuffer.get();
-						byteBuffer.get();
+						skipBytes(byteBuffer, 4);
 					}
 					else if (colorDataType==ColorDataType.FLOAT_I) {
 						System.out.println("global color intensity: " + byteBuffer.getFloat()
@@ -225,9 +222,7 @@ public class MmpldData {
 						Vector3f[] particles = new Vector3f[pCount];
 						for (int p=0; p<pCount; p++) {
 							particles[p] = new Vector3f(byteBuffer.getFloat(), byteBuffer.getFloat(), byteBuffer.getFloat());
-							//System.out.println("particle" + p + ": " +  particles[p].toString());
 						}
-						//System.out.println("particle #0: " + particles[0]);
 						dataFrames.add(particles);
 					}
 					if (READ_PARALLEL) {
@@ -259,7 +254,7 @@ public class MmpldData {
 		if (READ_PARALLEL) {
 			System.out.println("starting dataFrame loader as daemon thread...");
 			frameLoader.setDaemon(true);
-			frameLoader.setPriority(Thread.MIN_PRIORITY);
+			frameLoader.setPriority(Math.max(Thread.MIN_PRIORITY, frameLoader.getPriority()-2));
 			frameLoader.start();
 		} else {
 			frameLoader.run();
@@ -271,14 +266,20 @@ public class MmpldData {
 	}
 
 
-	private static String readAsciiString(ByteBuffer byteBuffer, int numberOfBytes) throws IOException {
+	private static void skipBytes(final ByteBuffer byteBuffer, final int n) {
+		byteBuffer.position(byteBuffer.position()+n);
+	}
+
+
+
+	private static String readAsciiString(final ByteBuffer byteBuffer, final int numberOfBytes) throws IOException {
 		byte[] bytes = new byte[numberOfBytes];
 		byteBuffer.get(bytes);
 		return new String(bytes, StandardCharsets.US_ASCII);
 	}
 
-	public static short getUnsignedByte(ByteBuffer bb) {
-		return ((short)(bb.get() & 0xff));
+	public static short getUnsignedByte(final ByteBuffer bb) {
+		return (short)(bb.get() & 0xff);
 	}
 
 

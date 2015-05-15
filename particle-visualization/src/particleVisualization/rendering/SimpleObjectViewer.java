@@ -11,10 +11,12 @@ import org.lwjgl.opengl.AMDDebugOutput;
 import org.lwjgl.opengl.AMDDebugOutputCallback;
 import org.lwjgl.opengl.ARBDebugOutput;
 import org.lwjgl.opengl.ARBDebugOutputCallback;
+import org.lwjgl.opengl.ContextAttribs;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.PixelFormat;
 import org.lwjgl.util.glu.GLU;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.UnicodeFont;
@@ -31,16 +33,16 @@ public class SimpleObjectViewer {
 
 	private final ParticleField particleField;
 	private UnicodeFont uFont;
-	private int overlayLeftMargin;
+	private final int overlayLeftMargin;
 
 	private double currentFps = 60;
 	private long framesRendered;
 	private Stopwatch fpsStopwatch;
 
-	private Set<Integer> keysHoldDown;
+	private final Set<Integer> keysHoldDown;
 
 
-	public SimpleObjectViewer(int windowWidth, int windowHeight, ParticleField sceneObject) {
+	public SimpleObjectViewer(final int windowWidth, final int windowHeight, final ParticleField sceneObject) {
 		particleField = sceneObject;
 		wWidth = windowWidth;
 		wHeight = windowHeight;
@@ -97,8 +99,19 @@ public class SimpleObjectViewer {
 		//Display.setVSyncEnabled(true);
 		Display.setTitle("Particle Visualization");
 		Display.setLocation(20, 8);
-		Display.create();
+		PixelFormat pixelFormat = new PixelFormat();
+		ContextAttribs contextAtrributes = new ContextAttribs()
+		//		.withProfileCore(true)
+		//		.withProfileCompatibility(true)
+		//		.withForwardCompatible(true)
+		.withDebug(true);
+		Display.create(pixelFormat, contextAtrributes);
 		System.out.println("supported openGL version: " + GL11.glGetString(GL11.GL_VERSION));
+		System.out.println("running openGL mode: " + contextAtrributes.getMajorVersion() + "." + contextAtrributes.getMinorVersion());
+		System.out.println("isForwardCompatible: " + contextAtrributes.isForwardCompatible()
+				+ ", isProfileCompatibility: " + contextAtrributes.isProfileCompatibility()
+				+ ", isProfileCore: " + contextAtrributes.isProfileCore()
+				);
 
 		if ( GLContext.getCapabilities().GL_ARB_debug_output ) {
 			System.out.println("registering ARBDebugOutputCallback");
@@ -172,7 +185,7 @@ public class SimpleObjectViewer {
 	}
 
 
-	private boolean isKeyDownEvent(int key) {
+	private boolean isKeyDownEvent(final int key) {
 		if(Keyboard.isKeyDown(key)) return keysHoldDown.add(key);
 		else return false;
 	}
@@ -230,7 +243,9 @@ public class SimpleObjectViewer {
 
 	public void cleanup() {
 		//release textures...
-		//Display.destroy();
+		if (Display.isCreated()) {
+			Display.destroy();
+		}
 	}
 
 
