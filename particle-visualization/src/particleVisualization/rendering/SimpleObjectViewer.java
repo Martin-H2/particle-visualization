@@ -98,7 +98,7 @@ public class SimpleObjectViewer {
 		Display.setDisplayMode(displayMode);
 		//Display.setVSyncEnabled(true);
 		Display.setTitle("Particle Visualization");
-		Display.setLocation(20, 8);
+		//Display.setLocation(8, 8);
 		PixelFormat pixelFormat = new PixelFormat();
 		ContextAttribs contextAtrributes = new ContextAttribs()
 		//		.withProfileCore(true)
