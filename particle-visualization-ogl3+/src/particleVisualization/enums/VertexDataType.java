@@ -1,4 +1,4 @@
-package particleVisualization.util;
+package particleVisualization.enums;
 
 public enum VertexDataType {
 

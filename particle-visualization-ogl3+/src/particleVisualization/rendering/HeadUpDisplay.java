@@ -1,26 +1,24 @@
 package particleVisualization.rendering;
 
 import static org.lwjgl.opengl.GL11.*;
-
 import java.awt.Font;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.EnumMap;
 import java.util.Map.Entry;
-
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.UnicodeFont;
 import org.newdawn.slick.font.effects.ColorEffect;
+import particleVisualization.enums.HudDebugKeys;
 
 
 public class HeadUpDisplay {
 
-	private final int			wWidth;
-	private final int			wHeight;
-	private final int			overlayLeftMargin;
-	private static int 			overlayBottomMargin = 20;
-	private final UnicodeFont	unicodeFont;
+	private final int									wWidth;
+	private final int									wHeight;
+	private final int									overlayLeftMargin;
+	private static int									overlayBottomMargin	= 20;
+	private final UnicodeFont							unicodeFont;
 
-	private final static Map<HudDebugKeys, Object> hudDebugValues = new LinkedHashMap<HudDebugKeys, Object>();
+	private final static EnumMap<HudDebugKeys, Object>	hudDebugValues		= new EnumMap<HudDebugKeys, Object>(HudDebugKeys.class);
 
 
 	@SuppressWarnings ("unchecked")
@@ -46,11 +44,12 @@ public class HeadUpDisplay {
 
 	public static void putDebugValue(HudDebugKeys key, Object value) {
 		hudDebugValues.put(key, value);
-		overlayBottomMargin = hudDebugValues.size()*15+20;
+		overlayBottomMargin = hudDebugValues.size() * 15 + 20;
 	}
+
 	public static void removeDebugValue(HudDebugKeys key) {
 		hudDebugValues.remove(key);
-		overlayBottomMargin = hudDebugValues.size()*15+20;
+		overlayBottomMargin = hudDebugValues.size() * 15 + 20;
 	}
 
 

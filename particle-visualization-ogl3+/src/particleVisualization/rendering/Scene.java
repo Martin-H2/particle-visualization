@@ -2,37 +2,40 @@ package particleVisualization.rendering;
 
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 import static org.lwjgl.opengl.GL11.*;
-
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL32;
-
 import particleVisualization.control.InputManager;
+import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.model.Camera;
 import particleVisualization.model.DrawableEntity;
 import particleVisualization.model.MmpldData;
 import particleVisualization.model.ParticleField;
+import particleVisualization.util.ScreenshotUtil;
 
 
 public class Scene {
 
-	private final Camera		camera;
-	private final InputManager	inputManager;
-	private final HeadUpDisplay	hud;
+	private final Camera			camera;
+	private final InputManager		inputManager;
+	private final HeadUpDisplay		hud;
 
-	private  Shader		simpleTexturedShader, simpleFlatShader, spriteShader;
-	private  Texture 		particleTex, gridTex, crateTex;
-	private  DrawableEntity	particleField, exampleCube1, exampleCube2, exampleQuad;
+	private Shader					simpleTexturedShader, simpleFlatShader;
+	private final Shader			spriteShader;
+	private final Texture			particleTex;
+	private Texture					gridTex;
+	private Texture					crateTex;
+	private final DrawableEntity	particleField;
+	private DrawableEntity			exampleCube1;
+	private DrawableEntity			exampleCube2;
+	private DrawableEntity			exampleQuad;
 
 
 	public Scene(int windowWidth, int windowHeight, MmpldData particleData) {
 
 		inputManager = new InputManager(windowWidth, windowHeight);
 
-		camera = new Camera(windowWidth, windowHeight, 60);
-		camera.translate(2, 2, -4);
-		camera.rotate(31, -34, 0);
+		camera = new Camera(windowWidth, windowHeight, 40);
+		camera.translate(4, 2.5f, -3);
+		camera.rotate(31, -47, 0);
 
 		//		crateTex = new Texture("crate.jpg");
 		//		gridTex = new Texture("stGrid1.png");
@@ -54,10 +57,6 @@ public class Scene {
 
 		particleField = new ParticleField(particleData, particleTex);
 		//		particleField.translate(-2, 0, 0);
-		//TODO cleanup
-		GL11.glPointSize(11);
-		GL11.glEnable(GL20.GL_POINT_SPRITE);
-		GL11.glEnable(GL32.GL_PROGRAM_POINT_SIZE);
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -67,6 +66,9 @@ public class Scene {
 
 
 	public void update() {
+		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_PRINT_SCREEN)) {
+			ScreenshotUtil.savePngScreenShot();
+		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(SimpleObjectViewer.getWindowId(), GL_TRUE);
 		}

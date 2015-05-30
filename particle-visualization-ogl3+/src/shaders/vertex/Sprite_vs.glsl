@@ -5,6 +5,7 @@ uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 uniform vec2 screenSize;
 uniform float spriteSize;
+uniform int renderMode;
 
 in vec4 in_Position;
 
@@ -16,10 +17,13 @@ void main(void) {
 	//float spriteSize = 1;
 
 	vec4 eyePos = viewMatrix * modelMatrix * in_Position;
-    vec4 projVoxel = projectionMatrix * vec4(spriteSize,spriteSize,eyePos.z,eyePos.w);
-    vec2 projSize = screenSize * projVoxel.xy / projVoxel.w;
+	
+	if (renderMode != 5) {
+	    vec4 projVoxel = projectionMatrix * vec4(spriteSize,spriteSize,eyePos.z,eyePos.w);
+	    vec2 projSize = screenSize * projVoxel.xy / projVoxel.w;
+	    gl_PointSize = 0.25 * (projSize.x+projSize.y);
+	}
     
-    gl_PointSize = 0.25 * (projSize.x+projSize.y);
     gl_Position = projectionMatrix * eyePos;
     
 }

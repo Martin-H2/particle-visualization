@@ -4,9 +4,7 @@ import static org.lwjgl.glfw.Callbacks.errorCallbackPrint;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
-
 import java.nio.ByteBuffer;
-
 import org.lwjgl.Sys;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -14,26 +12,25 @@ import org.lwjgl.glfw.GLFWvidmode;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.system.libffi.Closure;
-
 import particleVisualization.model.MmpldData;
 
 public class SimpleObjectViewer {
 
-	private static final boolean	DEBUG_MODE		= true;
+	private static final boolean	DEBUG_MODE			= true;
 
-	private static int				windowWidth;
-	private static int				windowHeight;
+	public static int				windowWidth;
+	public static int				windowHeight;
 	private final String			windowTitle;
 
 	private static long				windowId;
 
 	private GLFWErrorCallback		errorCallback;
 	private Closure					debugMessageCallback;
-	private long					frameStartNano	= -1L;
-	private static float			frameTimeMs		= 16.6f;
-	private int 					avgFpsFrameCounter = 0;
-	private static float			avgFpsFrameTimeCuml = 0;
-	private static float			fpsAvg		= 60f;
+	private long					frameStartNano		= -1L;
+	private static float			frameTimeMs			= 16.6f;
+	private int						avgFpsFrameCounter	= 0;
+	private static float			avgFpsFrameTimeCuml	= 0;
+	private static float			fpsAvg				= 60f;
 
 	private Scene					scene;
 
@@ -60,6 +57,7 @@ public class SimpleObjectViewer {
 		//		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		//		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); //TODO use core profile ?
 		//		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+		glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 		windowId = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);
 		if (windowId == NULL) throw new RuntimeException("Failed to create the GLFW window");
 		ByteBuffer vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
@@ -79,7 +77,7 @@ public class SimpleObjectViewer {
 			}
 		}
 		glViewport(0, 0, windowWidth, windowHeight);
-		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glEnable(GL_DEPTH_TEST);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		//		glEnable(GL_POLYGON_SMOOTH);
@@ -165,4 +163,6 @@ public class SimpleObjectViewer {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 	}
+
+
 }

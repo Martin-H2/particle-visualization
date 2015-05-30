@@ -3,10 +3,9 @@ package particleVisualization.model;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
-
 import particleVisualization.control.InputManager;
+import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.rendering.HeadUpDisplay;
-import particleVisualization.rendering.HudDebugKeys;
 import particleVisualization.rendering.SimpleObjectViewer;
 import particleVisualization.util.MiscUtils;
 
@@ -22,7 +21,7 @@ public class Camera extends Entity {
 	public Camera(float windowWidth, float windowHeight, float fieldOfView) {
 		float aspectRatio = windowWidth / windowHeight;
 		float near_plane = 0.1f;
-		float far_plane = 100f;
+		float far_plane = 300f;
 		float y_scale = MiscUtils.coTangent(MiscUtils.degreesToRadians(fieldOfView / 2f));
 		float x_scale = y_scale / aspectRatio;
 		float frustum_length = far_plane - near_plane;
@@ -75,8 +74,6 @@ public class Camera extends Entity {
 			translate(leftVector);
 		}
 
-
-
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_SPACE)) {
 			translate(0, translationStep, 0);
 		}
@@ -89,20 +86,7 @@ public class Camera extends Entity {
 			addPitch(InputManager.pollMouseYd() * mouseSensitivity);
 			addYaw(InputManager.pollMouseXd() * mouseSensitivity);
 		}
-		else {
-			if (InputManager.isKeyDown(GLFW.GLFW_KEY_Q)) {
-				rotate(0, -rotationStep, 0);
-			}
-			if (InputManager.isKeyDown(GLFW.GLFW_KEY_E)) {
-				rotate(0, rotationStep, 0);
-			}
-			if (InputManager.isKeyDown(GLFW.GLFW_KEY_TAB)) {
-				rotate(-rotationStep, 0, 0);
-			}
-			if (InputManager.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL)) {
-				rotate(rotationStep, 0, 0);
-			}
-		}
+
 
 		HeadUpDisplay.putDebugValue(HudDebugKeys.camPos, MiscUtils.formatVec3(getPosition()));
 		HeadUpDisplay.putDebugValue(HudDebugKeys.camRot, MiscUtils.formatVec3(getRotation()));

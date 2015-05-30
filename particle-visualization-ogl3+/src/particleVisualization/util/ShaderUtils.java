@@ -4,6 +4,7 @@ import static org.lwjgl.opengl.GL20.*;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import particleVisualization.enums.ShaderLayout;
 
 
 public class ShaderUtils {

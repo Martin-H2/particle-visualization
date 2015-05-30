@@ -9,21 +9,23 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
-
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
-
+import particleVisualization.enums.ShaderLayout;
 import particleVisualization.util.MiscUtils;
-import particleVisualization.util.ShaderLayout;
 
 public class VertexArrayObject {
 
-	private int	vertexCount, vaoId, vboId, iboId, tcboId = -1;
-	private final int	drawMode;
+	private int				vertexCountTotal;
+	private final int		vaoId;
+	private final int		vboId;
+	private int				iboId;
+	private int				tcboId	= -1;
+	private final int		drawMode;
 
-	private final boolean indexedMode;
-	private final boolean streamingMode;
-	private long positionBufferByteOffset;
+	private final boolean	indexedMode;
+	private final boolean	streamingMode;
+	private long			positionBufferByteOffset;
 
 	public VertexArrayObject(float[] positions, byte[] indices, float[] textureCoordinates, int drawMode) {
 		this(positions, indices, textureCoordinates, drawMode, -1);
@@ -40,10 +42,11 @@ public class VertexArrayObject {
 		vboId = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		if (streamingMode) {
-			glBufferData(GL_ARRAY_BUFFER, verticesTargetCount*3*4, GL_STREAM_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, verticesTargetCount * 3 * 4, GL_STREAM_DRAW);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, MiscUtils.createFloatBuffer(positions));
-			positionBufferByteOffset = positions.length*4;
-		} else {
+			positionBufferByteOffset = positions.length * 4;
+		}
+		else {
 			glBufferData(GL_ARRAY_BUFFER, MiscUtils.createFloatBuffer(positions), GL_STATIC_DRAW);
 		}
 		glVertexAttribPointer(ShaderLayout.in_Position.ordinal(), 3, GL_FLOAT, false, 0, 0);
@@ -58,12 +61,13 @@ public class VertexArrayObject {
 		}
 
 		if (indexedMode) {
-			vertexCount = indices.length;
+			vertexCountTotal = indices.length;
 			iboId = glGenBuffers();
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, MiscUtils.createByteBuffer(indices), GL_STATIC_DRAW);
-		} else {
-			vertexCount = positions.length/3;
+		}
+		else {
+			vertexCountTotal = positions.length / 3;
 		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -82,11 +86,16 @@ public class VertexArrayObject {
 	}
 
 	public void draw() {
+		draw(0, vertexCountTotal);
+	}
+
+	public void draw(int vertexOffset, int vertexCount) {
 		bind();
 		if (indexedMode) {
-			glDrawElements(drawMode, vertexCount, GL_UNSIGNED_BYTE, 0);
-		} else {
-			glDrawArrays(drawMode, 0, vertexCount);
+			glDrawElements(drawMode, vertexCount, GL_UNSIGNED_BYTE, vertexOffset);
+		}
+		else {
+			glDrawArrays(drawMode, vertexOffset, vertexCount);
 		}
 		unbind();
 	}
@@ -95,8 +104,8 @@ public class VertexArrayObject {
 		glBindBuffer(GL15.GL_ARRAY_BUFFER, vboId); //TODO mit draw kombinieren ?
 		glBufferSubData(GL_ARRAY_BUFFER, positionBufferByteOffset, MiscUtils.createFloatBuffer(newPositions));
 		glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-		positionBufferByteOffset += newPositions.length*4;
-		vertexCount += newPositions.length/3;
+		positionBufferByteOffset += newPositions.length * 4;
+		vertexCountTotal += newPositions.length / 3;
 	}
 
 	public void destroy() {
