@@ -27,7 +27,7 @@ public class ParticleField extends DrawableEntity {
 	private int					numberOfDrawnFrames		= 1;
 	private float				tailLength				= 0;
 	private boolean				paused					= true;
-	private float				dataFps					= 60;
+	private float				dataFps					= SimpleObjectViewer.refreshRate;
 	private int					uploadedFrames;
 
 	private final float			mouseSensitivity		= 0.15f;
@@ -105,6 +105,10 @@ public class ParticleField extends DrawableEntity {
 		}
 		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_TAB)) {
 			paused = !paused;
+		}
+
+		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_B)) {
+			toggleBoundingBox();
 		}
 
 		//TODO mouseRot

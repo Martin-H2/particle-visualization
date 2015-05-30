@@ -42,7 +42,7 @@ public class Shader {
 		setRenderMode(RenderMode.textured);
 		setUniform1f(UniformName.spriteSize, 0.06f); //TODO cleanup
 		setUniform2f(UniformName.screenSize, SimpleObjectViewer.windowWidth, SimpleObjectViewer.windowHeight);
-		setUniform4f(UniformName.globalColor, .7f, .7f, .65f, 1);
+		setUniform4f(UniformName.globalColor, .7f, .7f, .7f, 1);
 		disable();
 	}
 

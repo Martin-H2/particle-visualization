@@ -27,9 +27,11 @@ public class HeadUpDisplay {
 	private final static EnumMap<HudDebugKeys, Object>	hudDebugValues	= new EnumMap<HudDebugKeys, Object>(HudDebugKeys.class);
 	private final static List<String>					keyHelp			= new ArrayList<String>();
 	static {
-		keyHelp.add("CAM:");
+		keyHelp.add("VIEWER:");
+		keyHelp.add(" g ... ground");
+		keyHelp.add(" v ... vsync");
 		keyHelp.add(" wsad space shift");
-		keyHelp.add(" rMouse = look");
+		keyHelp.add(" rMouse ... look");
 		keyHelp.add(" ");
 		keyHelp.add("PARTICLES:");
 		keyHelp.add(" e ... expand");
@@ -39,7 +41,7 @@ public class HeadUpDisplay {
 		keyHelp.add(" x ... faster");
 		keyHelp.add(" y ... slower");
 		keyHelp.add(" TAB  play/pause");
-		keyHelp.add(" lMouse = turn");
+		keyHelp.add(" lMouse ... turn");
 	}
 
 	@SuppressWarnings ("unchecked")

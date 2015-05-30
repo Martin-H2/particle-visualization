@@ -21,6 +21,7 @@ public class SimpleObjectViewer {
 	public static int				windowWidth;
 	public static int				windowHeight;
 	private final String			windowTitle;
+	public static int				refreshRate;
 
 	private static long				windowId;
 
@@ -30,7 +31,8 @@ public class SimpleObjectViewer {
 	private static float			frameTimeMs			= 16.6f;
 	private int						avgFpsFrameCounter	= 0;
 	private static float			avgFpsFrameTimeCuml	= 0;
-	private static float			fpsAvg				= 60f;
+	private static float			fpsAvg				= SimpleObjectViewer.refreshRate;
+
 
 	private Scene					scene;
 
@@ -64,6 +66,7 @@ public class SimpleObjectViewer {
 		glfwSetWindowPos(windowId, (GLFWvidmode.width(vidMode) - windowWidth) / 2, (GLFWvidmode.height(vidMode) - windowHeight) / 2);
 		glfwMakeContextCurrent(windowId);
 		glfwSwapInterval(0); // 1 == v-sync
+		SimpleObjectViewer.refreshRate = GLFWvidmode.refreshRate(vidMode);
 	}
 
 	private void setupOpenGL() {

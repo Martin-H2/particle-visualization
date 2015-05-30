@@ -1,14 +1,12 @@
 package particleVisualization.rendering;
 
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
+import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.opengl.GL11.*;
 import org.lwjgl.glfw.GLFW;
 import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
-import particleVisualization.model.Camera;
-import particleVisualization.model.DrawableEntity;
-import particleVisualization.model.MmpldData;
-import particleVisualization.model.ParticleField;
+import particleVisualization.model.*;
 import particleVisualization.util.ScreenshotUtil;
 
 
@@ -18,16 +16,17 @@ public class Scene {
 	private final InputManager		inputManager;
 	private final HeadUpDisplay		hud;
 
-	private Shader					simpleTexturedShader, simpleFlatShader;
-	private final Shader			spriteShader;
-	private final Texture			particleTex;
-	private Texture					gridTex;
-	private Texture					crateTex;
-	private final DrawableEntity	particleField;
-	private DrawableEntity			exampleCube1;
-	private DrawableEntity			exampleCube2;
-	private DrawableEntity			exampleQuad;
+	private final Shader			simpleTexturedShader, spriteShader;
+	private Shader					simpleFlatShader;
 
+	private final Texture			particleTex, gridTex;
+	private Texture					crateTex;
+
+	private final DrawableEntity	particleField, groundQuad;
+	private DrawableEntity			exampleCube1, exampleCube2;
+
+	boolean							drawGroundOrientation	= false;
+	boolean							vSync					= true;
 
 	public Scene(int windowWidth, int windowHeight, MmpldData particleData) {
 
@@ -38,18 +37,18 @@ public class Scene {
 		camera.rotate(31, -47, 0);
 
 		//		crateTex = new Texture("crate.jpg");
-		//		gridTex = new Texture("stGrid1.png");
+		gridTex = new Texture("gray_grid_dark.jpg");
 		particleTex = new Texture("MegamolBubble.png");
 
 		hud = new HeadUpDisplay(windowWidth, windowHeight);
 
-		//		simpleTexturedShader = new Shader(camera.getProjectionMatrix(), "ModelViewProjection_vs.glsl", "Textured_fs.glsl");
+		simpleTexturedShader = new Shader(camera.getProjectionMatrix(), "ModelViewProjection_vs.glsl", "Textured_fs.glsl");
 		spriteShader = new Shader(camera.getProjectionMatrix(), "Sprite_vs.glsl", "Sprite_fs.glsl");
 		//		simpleFlatShader = new Shader(camera.getProjectionMatrix(), "ModelViewProjection_vs.glsl", "DirectionalFlatShading_fs.glsl");
 
-		//		exampleQuad = new Quad(gridTex);
-		//		exampleQuad.translate(0, -0.6f, 0);
-		//		exampleQuad.setScale(10);
+		groundQuad = new Quad(gridTex);
+		groundQuad.translate(0, -5, 0);
+		groundQuad.setScale(20);
 		//
 		//		exampleCube1 = new CubeQuads(crateTex);
 		//		exampleCube2 = new CubeQuads(crateTex);
@@ -78,31 +77,46 @@ public class Scene {
 		else {
 			InputManager.unlockWindowCursor();
 		}
+		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_G)) {
+			drawGroundOrientation = !drawGroundOrientation;
+		}
+		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_V)) {
+			vSync = !vSync;
+			glfwSwapInterval(vSync ? 1 : 0);
+		}
 		hud.update();
 		HeadUpDisplay.putDebugValue(HudDebugKeys.fps, SimpleObjectViewer.getFpsAvg());
 		camera.update();
 		particleField.update();
+		groundQuad.update();
 	}
 
 
 	public void draw() {
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
-		//		simpleTexturedShader.draw(camera.getViewMatrix(), exampleQuad, exampleCube1);
-		//		simpleFlatShader.draw(camera.getViewMatrix(), exampleCube2);
+		if (drawGroundOrientation) {
+			simpleTexturedShader.draw(camera.getViewMatrix(), groundQuad);
+			//		simpleFlatShader.draw(camera.getViewMatrix(), exampleCube2);
+		}
 
 		//glEnable(GL_BLEND);
 		//glDisable(GL_DEPTH_TEST);
 		spriteShader.draw(camera.getViewMatrix(), particleField);
 
 		hud.draw();
+
+		//		if (vSync) {
+		//			SyncUtil.sync(SimpleObjectViewer.refreshRate);
+
+		//		}
 	}
 
 
 	public void destroy() {
 		//		exampleCube1.destroy();
 		spriteShader.destroy();
-		//		exampleQuad.destroy();
+		groundQuad.destroy();
 		inputManager.cleanup();
 	}
 

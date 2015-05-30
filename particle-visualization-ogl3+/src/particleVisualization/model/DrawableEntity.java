@@ -152,7 +152,9 @@ public abstract class DrawableEntity extends Entity {
 		Matrix4f.rotate(MiscUtils.degreesToRadians(getRoll()), UNIT_VECTOR_Z, modelMatrix, modelMatrix);
 		Matrix4f.rotate(MiscUtils.degreesToRadians(getYaw()), UNIT_VECTOR_Y, modelMatrix, modelMatrix);
 		Matrix4f.rotate(MiscUtils.degreesToRadians(getPitch()), UNIT_VECTOR_X, modelMatrix, modelMatrix);
-		Matrix4f.translate(getBoundingBoxMid().negate(null), modelMatrix, modelMatrix);
+		if (bBoxMin != null) { //TODO always correct rotation center offset
+			Matrix4f.translate(getBoundingBoxMid().negate(null), modelMatrix, modelMatrix);
+		}
 	}
 
 	public Matrix4f getUpdatedModelMatrix() {
@@ -176,6 +178,10 @@ public abstract class DrawableEntity extends Entity {
 
 	public void drawBoundingBox(boolean drawBoundingBox) {
 		this.drawBoundingBox = drawBoundingBox;
+	}
+
+	public void toggleBoundingBox() {
+		drawBoundingBox = !drawBoundingBox;
 	}
 
 
