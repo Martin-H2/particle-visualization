@@ -72,12 +72,13 @@ public class Scene {
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(SimpleObjectViewer.getWindowId(), GL_TRUE);
 		}
-		if (InputManager.isMouseDown(GLFW.GLFW_MOUSE_BUTTON_RIGHT)) {
+		if (InputManager.isMouseDown(GLFW.GLFW_MOUSE_BUTTON_RIGHT) || InputManager.isMouseDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
 			InputManager.lockWindowCursor();
 		}
 		else {
 			InputManager.unlockWindowCursor();
 		}
+		hud.update();
 		HeadUpDisplay.putDebugValue(HudDebugKeys.fps, SimpleObjectViewer.getFpsAvg());
 		camera.update();
 		particleField.update();

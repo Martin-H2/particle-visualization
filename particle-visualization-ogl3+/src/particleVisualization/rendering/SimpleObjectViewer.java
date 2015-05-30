@@ -127,7 +127,7 @@ public class SimpleObjectViewer {
 			avgFpsFrameTimeCuml += frameTimeMs;
 			if (avgFpsFrameTimeCuml >= 1000f) {
 				fpsAvg = 1f / (avgFpsFrameTimeCuml / avgFpsFrameCounter) * 1000f;
-				//System.out.println(getFpsAvg());
+				//System.out.println("fps: " + getFpsAvg());
 				avgFpsFrameCounter = 0;
 				avgFpsFrameTimeCuml = 0;
 			}

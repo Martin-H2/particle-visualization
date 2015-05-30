@@ -162,7 +162,7 @@ public class MmpldData {
 		}
 		else if (colorDataType == ColorDataType.FLOAT_I) {
 			System.out.println("global color intensity: " + byteBuffer.getFloat()
-					+ " / range: " + byteBuffer.getFloat());
+				+ " / range: " + byteBuffer.getFloat());
 		}
 
 		int particlesPerFrame = (int) byteBuffer.getLong();
@@ -215,7 +215,7 @@ public class MmpldData {
 					}
 					else if (colorDataType == ColorDataType.FLOAT_I) {
 						System.out.println("global color intensity: " + byteBuffer.getFloat()
-								+ " / range: " + byteBuffer.getFloat());
+							+ " / range: " + byteBuffer.getFloat());
 					}
 
 					int pCount = (int) byteBuffer.getLong();
@@ -237,7 +237,7 @@ public class MmpldData {
 							//						System.out.println("framesProcessed: " + (i+1) + " (" + stopwatch.getElapsedSeconds() + "s)");
 							//						break;
 							try {
-								Thread.sleep(500);
+								Thread.sleep(300);
 							}
 							catch (InterruptedException e) {
 								e.printStackTrace();

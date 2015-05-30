@@ -120,15 +120,22 @@ public abstract class DrawableEntity extends Entity {
 	}
 
 
-	public void addScale(float x, float y, float z) {
-		modelScale.x += x;
-		modelScale.y += y;
-		modelScale.z += z;
+	public void addScaleClipped(float x, float y, float z) {
+		modelScale.x = MiscUtils.clip(modelScale.x + x, .0001f, 110f);
+		modelScale.y = MiscUtils.clip(modelScale.y + y, .0001f, 110f);
+		modelScale.z = MiscUtils.clip(modelScale.z + z, .0001f, 110f);
+		needsMatrixUpdate = true;
+	}
+
+	public void scaleClipped(float s) {
+		modelScale.x = MiscUtils.clip(modelScale.x * s, .0001f, 110f);
+		modelScale.y = MiscUtils.clip(modelScale.y * s, .0001f, 110f);
+		modelScale.z = MiscUtils.clip(modelScale.z * s, .0001f, 110f);
 		needsMatrixUpdate = true;
 	}
 
 	public void addScale(float s) {
-		addScale(s, s, s);
+		addScaleClipped(s, s, s);
 	}
 
 	public void setScale(float s) {

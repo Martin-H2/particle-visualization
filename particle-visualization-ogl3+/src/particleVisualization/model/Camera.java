@@ -82,8 +82,8 @@ public class Camera extends Entity {
 		}
 
 
-		if (InputManager.isLockedCursorMode()) {
-			addPitch(InputManager.pollMouseYd() * mouseSensitivity);
+		if (InputManager.isLockedOnRightMouse()) {
+			addPitchClipped(InputManager.pollMouseYd() * mouseSensitivity, maxPitch);
 			addYaw(InputManager.pollMouseXd() * mouseSensitivity);
 		}
 
@@ -93,14 +93,6 @@ public class Camera extends Entity {
 
 	}
 
-
-	private void addPitch(float pitchDelta) {
-		setPitch(MiscUtils.clip(getPitch() + pitchDelta, -maxPitch, maxPitch));
-	}
-
-	private void addYaw(float yawDelta) {
-		setYaw(getYaw() + yawDelta);
-	}
 
 	private void updateViewMatrix() {
 		viewMatrix.setIdentity();

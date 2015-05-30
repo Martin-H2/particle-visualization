@@ -25,10 +25,12 @@ public class ParticleField extends DrawableEntity {
 	private final int			maxParticlesDisplayed	= 1000;
 	private final int			particlesPerFrame;
 	private int					numberOfDrawnFrames		= 1;
+	private float				tailLength				= 0;
 	private boolean				paused					= true;
-	private final int			dataFps					= 60;
+	private float				dataFps					= 60;
 	private int					uploadedFrames;
 
+	private final float			mouseSensitivity		= 0.15f;
 
 
 	public ParticleField(MmpldData particleData, Texture spriteTexture) {
@@ -78,41 +80,41 @@ public class ParticleField extends DrawableEntity {
 			currentFrameIndex = (int) currentFrameIndexD;
 		}
 
-		float translationStep = SimpleObjectViewer.getFrameTimeMs() / 200.0f;
-		float rotationStep = SimpleObjectViewer.getFrameTimeMs() / 10.0f;
+		float scaleStep = SimpleObjectViewer.getFrameTimeMs() / 1000.0f;
 
 
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_KP_ADD)) {
-			numberOfDrawnFrames = MiscUtils.clip(numberOfDrawnFrames + 1, 1, uploadedFrames);
-		}
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_KP_SUBTRACT)) {
-			numberOfDrawnFrames = MiscUtils.clip(numberOfDrawnFrames - 1, 1, uploadedFrames);
-		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_E)) {
-			addScale(translationStep);
+			scaleClipped(1 + scaleStep);
+		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_Q)) {
+			scaleClipped(1 - scaleStep);
+		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_F)) {
+			tailLength = MiscUtils.clip(tailLength * (1 + scaleStep) + 10 * scaleStep, 0, uploadedFrames - 1);
+			numberOfDrawnFrames = (int) tailLength + 1;
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_C)) {
-			addScale(-translationStep);
+			tailLength = MiscUtils.clip(tailLength * (1 - scaleStep) - 10 * scaleStep, 0, uploadedFrames - 1);
+			numberOfDrawnFrames = (int) tailLength + 1;
+		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_X)) {
+			dataFps = MiscUtils.clip(dataFps * (1 + scaleStep), 1, 1000);
+		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_Z)) {
+			dataFps = MiscUtils.clip(dataFps * (1 - scaleStep), 1, 1000);
 		}
 		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_TAB)) {
 			paused = !paused;
 		}
 
-
-
 		//TODO mouseRot
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_PAGE_UP)) {
-			//			translate(0, translationStep, 0);
-			rotate(0, 0, rotationStep);
-		}
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_PAGE_DOWN)) {
-			//			translate(0, -translationStep, 0);
-			rotate(0, 0, -rotationStep);
+		if (InputManager.isLockedOnLeftMouse()) {
+			addPitch(InputManager.pollMouseYd() * -mouseSensitivity);
+			addYaw(InputManager.pollMouseXd() * -mouseSensitivity);
 		}
 
 
-
-		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFps, dataFps);
+		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFps, paused ? 0 : dataFps);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrame, currentFrameIndex);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrameCount, dataFrames.size());
 		HeadUpDisplay.putDebugValue(HudDebugKeys.numTailSegments, numberOfDrawnFrames - 1);

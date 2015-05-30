@@ -1,12 +1,10 @@
 package particleVisualization.control;
 
 import static org.lwjgl.glfw.GLFW.*;
-
 import java.util.HashSet;
 import java.util.Set;
-
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
-
 import particleVisualization.rendering.SimpleObjectViewer;
 
 
@@ -96,6 +94,16 @@ public class InputManager extends GLFWCursorPosCallback {
 
 	public void cleanup() {
 		this.release();
+	}
+
+
+
+	public static boolean isLockedOnRightMouse() {
+		return isLockedCursorMode() && isMouseDown(GLFW.GLFW_MOUSE_BUTTON_RIGHT);
+	}
+
+	public static boolean isLockedOnLeftMouse() {
+		return isLockedCursorMode() && isMouseDown(GLFW.GLFW_MOUSE_BUTTON_LEFT);
 	}
 
 
