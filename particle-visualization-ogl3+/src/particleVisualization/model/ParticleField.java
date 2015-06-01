@@ -110,6 +110,9 @@ public class ParticleField extends DrawableEntity {
 			toggleBoundingBox();
 		}
 
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_R)) {
+			setPitch(0); setYaw(0); setRoll(0);
+		}
 		//TODO mouseRot
 		if (InputManager.isLockedOnLeftMouse()) {
 			addYaw(InputManager.pollMouseXd() * -mouseSensitivity);
@@ -117,15 +120,7 @@ public class ParticleField extends DrawableEntity {
 			addPitch((float) (Math.cos(MiscUtils.degreesToRadians(Scene.camera.getYaw()-getYaw())) * (yd * -mouseSensitivity)));
 			addRoll((float) (Math.sin(MiscUtils.degreesToRadians(Scene.camera.getYaw()-getYaw())) * (yd * mouseSensitivity)));
 		}
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_R)) {
-			addRoll(1);
-		}
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_P)) {
-			addPitch(1);
-		}
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_J)) {
-			addYaw(1);
-		}
+
 
 
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFps, paused ? 0 : dataFps);
