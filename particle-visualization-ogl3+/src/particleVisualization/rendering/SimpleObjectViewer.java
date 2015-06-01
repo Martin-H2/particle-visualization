@@ -4,7 +4,9 @@ import static org.lwjgl.glfw.Callbacks.errorCallbackPrint;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
+
 import java.nio.ByteBuffer;
+
 import org.lwjgl.Sys;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -12,6 +14,7 @@ import org.lwjgl.glfw.GLFWvidmode;
 import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.system.libffi.Closure;
+
 import particleVisualization.model.MmpldData;
 
 public class SimpleObjectViewer {
@@ -22,6 +25,7 @@ public class SimpleObjectViewer {
 	public static int				windowHeight;
 	private final String			windowTitle;
 	public static int				refreshRate;
+	private static boolean			vSync;
 
 	private static long				windowId;
 
@@ -89,6 +93,7 @@ public class SimpleObjectViewer {
 		//		glShadeModel(GL_SMOOTH);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
+		toggleVsync();
 	}
 
 
@@ -165,6 +170,11 @@ public class SimpleObjectViewer {
 		else {
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
+	}
+
+	public static void toggleVsync() {
+		vSync = !vSync;
+		glfwSwapInterval(vSync ? 1 : 0);
 	}
 
 

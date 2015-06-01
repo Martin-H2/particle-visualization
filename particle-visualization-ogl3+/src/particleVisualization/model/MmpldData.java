@@ -10,8 +10,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.DataFormatException;
+
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
+
 import particleVisualization.enums.ColorDataType;
 import particleVisualization.enums.VertexDataType;
 
@@ -162,7 +164,7 @@ public class MmpldData {
 		}
 		else if (colorDataType == ColorDataType.FLOAT_I) {
 			System.out.println("global color intensity: " + byteBuffer.getFloat()
-				+ " / range: " + byteBuffer.getFloat());
+					+ " / range: " + byteBuffer.getFloat());
 		}
 
 		int particlesPerFrame = (int) byteBuffer.getLong();
@@ -215,7 +217,7 @@ public class MmpldData {
 					}
 					else if (colorDataType == ColorDataType.FLOAT_I) {
 						System.out.println("global color intensity: " + byteBuffer.getFloat()
-							+ " / range: " + byteBuffer.getFloat());
+								+ " / range: " + byteBuffer.getFloat());
 					}
 
 					int pCount = (int) byteBuffer.getLong();

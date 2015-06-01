@@ -1,9 +1,10 @@
 package particleVisualization.rendering;
 
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
-import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
 import static org.lwjgl.opengl.GL11.*;
+
 import org.lwjgl.glfw.GLFW;
+
 import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.model.*;
@@ -26,7 +27,8 @@ public class Scene {
 	private DrawableEntity			exampleCube1, exampleCube2;
 
 	boolean							drawGroundOrientation	= false;
-	boolean							vSync					= true;
+
+
 
 	public Scene(int windowWidth, int windowHeight, MmpldData particleData) {
 
@@ -81,8 +83,7 @@ public class Scene {
 			drawGroundOrientation = !drawGroundOrientation;
 		}
 		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_V)) {
-			vSync = !vSync;
-			glfwSwapInterval(vSync ? 1 : 0);
+			SimpleObjectViewer.toggleVsync();
 		}
 		hud.update();
 		HeadUpDisplay.putDebugValue(HudDebugKeys.fps, SimpleObjectViewer.getFpsAvg());
@@ -95,6 +96,7 @@ public class Scene {
 	public void draw() {
 		glEnable(GL_DEPTH_TEST);
 		glDisable(GL_BLEND);
+
 		if (drawGroundOrientation) {
 			simpleTexturedShader.draw(camera.getViewMatrix(), groundQuad);
 			//		simpleFlatShader.draw(camera.getViewMatrix(), exampleCube2);

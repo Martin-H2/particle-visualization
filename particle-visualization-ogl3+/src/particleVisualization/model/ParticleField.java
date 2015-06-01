@@ -1,11 +1,13 @@
 package particleVisualization.model;
 
 import java.util.List;
+
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.util.vector.Vector4f;
+
 import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.enums.RenderMode;
@@ -52,7 +54,7 @@ public class ParticleField extends DrawableEntity {
 
 	@Override
 	protected void drawVao() {
-		vertexArrayObject.draw(currentFrameIndex * particlesPerFrame, particlesPerFrame * numberOfDrawnFrames);
+		vertexArrayObject.draw(currentFrameIndex * particlesPerFrame, numberOfDrawnFrames * particlesPerFrame, true);
 	}
 
 	//	public void increaseMaxParticles(int maxParticlesInc) {
@@ -76,7 +78,7 @@ public class ParticleField extends DrawableEntity {
 		}
 
 		if (!paused) {
-			currentFrameIndexD = (currentFrameIndexD + dataFps / SimpleObjectViewer.getFps()) % dataFrames.size();
+			currentFrameIndexD = (currentFrameIndexD + dataFps / SimpleObjectViewer.getFps()) % uploadedFrames;
 			currentFrameIndex = (int) currentFrameIndexD;
 		}
 

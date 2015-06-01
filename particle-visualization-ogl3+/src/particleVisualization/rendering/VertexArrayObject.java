@@ -9,8 +9,10 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL30;
+
 import particleVisualization.enums.ShaderLayout;
 import particleVisualization.util.MiscUtils;
 
@@ -86,16 +88,25 @@ public class VertexArrayObject {
 	}
 
 	public void draw() {
-		draw(0, vertexCountTotal);
+		draw(0, vertexCountTotal, false);
 	}
 
-	public void draw(int vertexOffset, int vertexCount) {
+	public void draw(int vertexOffset, int vertexDrawCount, boolean wrapIndicesAround) {
+		if (vertexOffset>=vertexCountTotal) {
+			System.err.println("ERROR @VOA.draw: vertexOffset out of bounds");
+		}
 		bind();
 		if (indexedMode) {
-			glDrawElements(drawMode, vertexCount, GL_UNSIGNED_BYTE, vertexOffset);
+			glDrawElements(drawMode, vertexDrawCount, GL_UNSIGNED_BYTE, vertexOffset);
 		}
 		else {
-			glDrawArrays(drawMode, vertexOffset, vertexCount);
+			if (wrapIndicesAround && vertexOffset+vertexDrawCount > vertexCountTotal) {
+				int overflow = vertexOffset+vertexDrawCount - vertexCountTotal;
+				glDrawArrays(drawMode, vertexOffset, vertexDrawCount-overflow);
+				glDrawArrays(drawMode, 0, overflow); //wrapIndicesAround!
+			} else {
+				glDrawArrays(drawMode, vertexOffset, vertexDrawCount);
+			}
 		}
 		unbind();
 	}

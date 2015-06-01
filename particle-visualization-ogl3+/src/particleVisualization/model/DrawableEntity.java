@@ -3,9 +3,11 @@ package particleVisualization.model;
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
+
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+
 import particleVisualization.enums.RenderMode;
 import particleVisualization.rendering.Shader;
 import particleVisualization.rendering.Texture;
@@ -51,6 +53,9 @@ public abstract class DrawableEntity extends Entity {
 
 	protected abstract void setPerDrawUniforms(Shader shader);
 
+	/**
+	 * e.g.: vertexArrayObject.draw();
+	 */
 	protected abstract void drawVao();
 
 
