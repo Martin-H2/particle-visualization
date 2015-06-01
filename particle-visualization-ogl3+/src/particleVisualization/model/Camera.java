@@ -3,6 +3,7 @@ package particleVisualization.model;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+
 import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.rendering.HeadUpDisplay;

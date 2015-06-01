@@ -11,10 +11,7 @@ import org.lwjgl.util.vector.Vector4f;
 import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.enums.RenderMode;
-import particleVisualization.rendering.HeadUpDisplay;
-import particleVisualization.rendering.Shader;
-import particleVisualization.rendering.SimpleObjectViewer;
-import particleVisualization.rendering.Texture;
+import particleVisualization.rendering.*;
 import particleVisualization.util.MiscUtils;
 
 public class ParticleField extends DrawableEntity {
@@ -115,8 +112,19 @@ public class ParticleField extends DrawableEntity {
 
 		//TODO mouseRot
 		if (InputManager.isLockedOnLeftMouse()) {
-			addPitch(InputManager.pollMouseYd() * -mouseSensitivity);
 			addYaw(InputManager.pollMouseXd() * -mouseSensitivity);
+			float yd = InputManager.pollMouseYd();
+			addPitch((float) (Math.cos(MiscUtils.degreesToRadians(Scene.camera.getYaw()-getYaw())) * (yd * -mouseSensitivity)));
+			addRoll((float) (Math.sin(MiscUtils.degreesToRadians(Scene.camera.getYaw()-getYaw())) * (yd * mouseSensitivity)));
+		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_R)) {
+			addRoll(1);
+		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_P)) {
+			addPitch(1);
+		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_J)) {
+			addYaw(1);
 		}
 
 

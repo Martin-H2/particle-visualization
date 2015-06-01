@@ -13,7 +13,7 @@ import particleVisualization.util.ScreenshotUtil;
 
 public class Scene {
 
-	private final Camera			camera;
+	public static Camera			camera;
 	private final InputManager		inputManager;
 	private final HeadUpDisplay		hud;
 
@@ -35,8 +35,7 @@ public class Scene {
 		inputManager = new InputManager(windowWidth, windowHeight);
 
 		camera = new Camera(windowWidth, windowHeight, 40);
-		camera.translate(4, 2.5f, -3);
-		camera.rotate(31, -47, 0);
+		camera.translate(1, 0, -6);
 
 		//		crateTex = new Texture("crate.jpg");
 		gridTex = new Texture("gray_grid_dark.jpg");
@@ -57,6 +56,7 @@ public class Scene {
 		//		exampleCube2.translate(2, 0, 0);
 
 		particleField = new ParticleField(particleData, particleTex);
+		particleField.rotate(-31, 47, 0);
 		//		particleField.translate(-2, 0, 0);
 
 		glEnable(GL_BLEND);

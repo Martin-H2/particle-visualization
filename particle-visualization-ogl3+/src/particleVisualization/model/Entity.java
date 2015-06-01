@@ -1,6 +1,7 @@
 package particleVisualization.model;
 
 import org.lwjgl.util.vector.Vector3f;
+
 import particleVisualization.util.MiscUtils;
 
 
@@ -47,6 +48,11 @@ public abstract class Entity {
 		needsMatrixUpdate = true;
 	}
 
+	public void setRoll(float roll) {
+		rotation.z = roll;
+		needsMatrixUpdate = true;
+	}
+
 	public void addPitchClipped(float pitchDelta, float maxPitch) {
 		setPitch(MiscUtils.clip(getPitch() + pitchDelta, -maxPitch, maxPitch));
 	}
@@ -57,6 +63,10 @@ public abstract class Entity {
 
 	public void addYaw(float yawDelta) {
 		setYaw(getYaw() + yawDelta);
+	}
+
+	public void addRoll(float rollDelta) {
+		setRoll(getRoll() + rollDelta);
 	}
 
 
