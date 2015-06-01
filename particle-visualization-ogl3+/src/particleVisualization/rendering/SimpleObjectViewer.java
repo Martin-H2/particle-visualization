@@ -174,8 +174,13 @@ public class SimpleObjectViewer {
 
 	public static void toggleVsync() {
 		vSync = !vSync;
-		glfwSwapInterval(vSync ? 1 : 0);
+		glfwSwapInterval(isGlfwVsynced() ? 1 : 0);
 	}
+
+	public static boolean isGlfwVsynced() {
+		return vSync;
+	}
+
 
 
 }

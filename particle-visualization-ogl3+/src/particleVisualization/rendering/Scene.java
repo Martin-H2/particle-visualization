@@ -26,7 +26,7 @@ public class Scene {
 	private final DrawableEntity	particleField, groundQuad;
 	private DrawableEntity			exampleCube1, exampleCube2;
 
-	boolean							drawGroundOrientation	= false;
+	boolean							drawGroundOrientation	= true;
 
 
 
@@ -35,7 +35,8 @@ public class Scene {
 		inputManager = new InputManager(windowWidth, windowHeight);
 
 		camera = new Camera(windowWidth, windowHeight, 40);
-		camera.translate(1, 0, -6);
+		camera.translate(4, 2.5f, -3);
+		camera.rotate(31, -47, 0);
 
 		//		crateTex = new Texture("crate.jpg");
 		gridTex = new Texture("gray_grid_dark.jpg");
@@ -56,7 +57,6 @@ public class Scene {
 		//		exampleCube2.translate(2, 0, 0);
 
 		particleField = new ParticleField(particleData, particleTex);
-		particleField.rotate(-31, 47, 0);
 		//		particleField.translate(-2, 0, 0);
 
 		glEnable(GL_BLEND);
@@ -108,10 +108,13 @@ public class Scene {
 
 		hud.draw();
 
-		//		if (vSync) {
-		//			SyncUtil.sync(SimpleObjectViewer.refreshRate);
+//		if (SimpleObjectViewer.isGlfwVsynced()) {
+//			HeadUpDisplay.putDebugValue(HudDebugKeys.vSync, "glfw");
+//		} else {
+//			HeadUpDisplay.putDebugValue(HudDebugKeys.vSync, "custom");
+//			SyncUtil.sync(SimpleObjectViewer.refreshRate);
+//		}
 
-		//		}
 	}
 
 

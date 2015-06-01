@@ -3,6 +3,7 @@ package particleVisualization.enums;
 public enum HudDebugKeys {
 
 	fps,
+	vSync,
 	dataFrameCount,
 	dataFrame,
 	dataFps,
