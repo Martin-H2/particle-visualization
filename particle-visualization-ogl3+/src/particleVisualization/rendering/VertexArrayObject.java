@@ -9,10 +9,8 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
-
-import org.lwjgl.opengl.GL15;
-import org.lwjgl.opengl.GL30;
-
+import java.nio.IntBuffer;
+import org.lwjgl.opengl.*;
 import particleVisualization.enums.ShaderLayout;
 import particleVisualization.util.MiscUtils;
 
@@ -21,6 +19,7 @@ public class VertexArrayObject {
 	private int				vertexCountTotal;
 	private final int		vaoId;
 	private final int		vboId;
+	private int				indirectBufferId;
 	private int				iboId;
 	private int				tcboId	= -1;
 	private final int		drawMode;
@@ -28,6 +27,7 @@ public class VertexArrayObject {
 	private final boolean	indexedMode;
 	private final boolean	streamingMode;
 	private long			positionBufferByteOffset;
+	private IntBuffer		indirectBuffer;
 
 	public VertexArrayObject(float[] positions, byte[] indices, float[] textureCoordinates, int drawMode) {
 		this(positions, indices, textureCoordinates, drawMode, -1);
@@ -38,8 +38,10 @@ public class VertexArrayObject {
 		indexedMode = indices != null;
 		streamingMode = verticesTargetCount != -1;
 
+
 		vaoId = glGenVertexArrays();
 		glBindVertexArray(vaoId);
+
 
 		vboId = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
@@ -77,6 +79,18 @@ public class VertexArrayObject {
 		glBindVertexArray(0);
 	}
 
+
+	public void setupIndirectBuffer() { //TODO content as param
+		indirectBuffer = MiscUtils.createIntBuffer(new int[] {
+			3, 1, 0, 0, // vertexCount, instanceCount, firstVertex, baseInstance
+			3, 1, 3, 0,
+			3, 1, 6, 0,
+		});
+		indirectBufferId = glGenBuffers();
+		glBindBuffer(GL40.GL_DRAW_INDIRECT_BUFFER, indirectBufferId);
+		glBufferData(GL40.GL_DRAW_INDIRECT_BUFFER, indirectBuffer, GL_STREAM_DRAW);
+	}
+
 	public void bind() {
 		glBindVertexArray(vaoId);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
@@ -92,7 +106,7 @@ public class VertexArrayObject {
 	}
 
 	public void draw(int vertexOffset, int vertexDrawCount, boolean wrapIndicesAround) {
-		if (vertexOffset>=vertexCountTotal) {
+		if (vertexOffset >= vertexCountTotal) {
 			System.err.println("ERROR @VOA.draw: vertexOffset out of bounds");
 		}
 		bind();
@@ -100,15 +114,22 @@ public class VertexArrayObject {
 			glDrawElements(drawMode, vertexDrawCount, GL_UNSIGNED_BYTE, vertexOffset);
 		}
 		else {
-			if (wrapIndicesAround && vertexOffset+vertexDrawCount > vertexCountTotal) {
-				int overflow = vertexOffset+vertexDrawCount - vertexCountTotal;
-				glDrawArrays(drawMode, vertexOffset, vertexDrawCount-overflow);
+			if (wrapIndicesAround && vertexOffset + vertexDrawCount > vertexCountTotal) {
+				int overflow = vertexOffset + vertexDrawCount - vertexCountTotal;
+				glDrawArrays(drawMode, vertexOffset, vertexDrawCount - overflow);
 				glDrawArrays(drawMode, 0, overflow); //wrapIndicesAround!
-			} else {
+			}
+			else {
 				glDrawArrays(drawMode, vertexOffset, vertexDrawCount);
 			}
 		}
 		unbind();
+	}
+
+	public void drawIndirect() {
+		glBindBuffer(GL40.GL_DRAW_INDIRECT_BUFFER, indirectBufferId);
+		//GL43.glMultiDrawArraysIndirect(GL11.GL_LINE_STRIP, indirectBuffer, 3, 0);
+		GL43.glMultiDrawArraysIndirect(GL11.GL_LINE_STRIP, 0, 3, 0);
 	}
 
 	public void appendPositionData(float[] newPositions) {

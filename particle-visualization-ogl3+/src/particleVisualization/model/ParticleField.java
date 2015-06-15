@@ -1,13 +1,11 @@
 package particleVisualization.model;
 
 import java.util.List;
-
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.util.vector.Vector4f;
-
 import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.enums.RenderMode;
@@ -43,6 +41,7 @@ public class ParticleField extends DrawableEntity {
 		drawBoundingBox(true);
 		GL11.glEnable(GL20.GL_POINT_SPRITE);
 		GL11.glEnable(GL32.GL_PROGRAM_POINT_SIZE);
+		vertexArrayObject.setupIndirectBuffer();
 	}
 
 	@Override
@@ -51,6 +50,7 @@ public class ParticleField extends DrawableEntity {
 
 	@Override
 	protected void drawVao() {
+		//vertexArrayObject.drawIndirect();
 		vertexArrayObject.draw(currentFrameIndex * particlesPerFrame, numberOfDrawnFrames * particlesPerFrame, true);
 	}
 
@@ -111,14 +111,16 @@ public class ParticleField extends DrawableEntity {
 		}
 
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_R)) {
-			setPitch(0); setYaw(0); setRoll(0);
+			setPitch(0);
+			setYaw(0);
+			setRoll(0);
 		}
 		//TODO mouseRot
 		if (InputManager.isLockedOnLeftMouse()) {
 			addYaw(InputManager.pollMouseXd() * -mouseSensitivity);
 			float yd = InputManager.pollMouseYd();
-			addPitch((float) (Math.cos(MiscUtils.degreesToRadians(Scene.camera.getYaw()-getYaw())) * (yd * -mouseSensitivity)));
-			addRoll((float) (Math.sin(MiscUtils.degreesToRadians(Scene.camera.getYaw()-getYaw())) * (yd * mouseSensitivity)));
+			addPitch((float) (Math.cos(MiscUtils.degreesToRadians(Scene.camera.getYaw() - getYaw())) * (yd * -mouseSensitivity)));
+			addRoll((float) (Math.sin(MiscUtils.degreesToRadians(Scene.camera.getYaw() - getYaw())) * (yd * mouseSensitivity)));
 		}
 
 
