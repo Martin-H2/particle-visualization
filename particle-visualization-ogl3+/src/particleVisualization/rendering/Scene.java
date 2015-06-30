@@ -2,9 +2,7 @@ package particleVisualization.rendering;
 
 import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
 import static org.lwjgl.opengl.GL11.*;
-
 import org.lwjgl.glfw.GLFW;
-
 import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.model.*;
@@ -72,6 +70,7 @@ public class Scene {
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(SimpleObjectViewer.getWindowId(), GL_TRUE);
+			return;
 		}
 		if (InputManager.isMouseDown(GLFW.GLFW_MOUSE_BUTTON_RIGHT) || InputManager.isMouseDown(GLFW.GLFW_MOUSE_BUTTON_LEFT)) {
 			InputManager.lockWindowCursor();
@@ -108,12 +107,12 @@ public class Scene {
 
 		hud.draw();
 
-//		if (SimpleObjectViewer.isGlfwVsynced()) {
-//			HeadUpDisplay.putDebugValue(HudDebugKeys.vSync, "glfw");
-//		} else {
-//			HeadUpDisplay.putDebugValue(HudDebugKeys.vSync, "custom");
-//			SyncUtil.sync(SimpleObjectViewer.refreshRate);
-//		}
+		//		if (SimpleObjectViewer.isGlfwVsynced()) {
+		//			HeadUpDisplay.putDebugValue(HudDebugKeys.vSync, "glfw");
+		//		} else {
+		//			HeadUpDisplay.putDebugValue(HudDebugKeys.vSync, "custom");
+		//			SyncUtil.sync(SimpleObjectViewer.refreshRate);
+		//		}
 
 	}
 

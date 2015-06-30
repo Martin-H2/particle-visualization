@@ -37,7 +37,7 @@ public class Quad extends DrawableEntity {
 	}
 
 	@Override
-	protected void drawVao() {
+	protected void drawVao(Shader shader) {
 		vertexArrayObject.draw();
 	}
 

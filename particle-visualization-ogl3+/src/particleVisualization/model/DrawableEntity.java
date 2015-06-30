@@ -3,11 +3,9 @@ package particleVisualization.model;
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.glDisable;
 import static org.lwjgl.opengl.GL11.glEnable;
-
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
-
 import particleVisualization.enums.RenderMode;
 import particleVisualization.rendering.Shader;
 import particleVisualization.rendering.Texture;
@@ -55,8 +53,10 @@ public abstract class DrawableEntity extends Entity {
 
 	/**
 	 * e.g.: vertexArrayObject.draw();
+	 * 
+	 * @param shader
 	 */
-	protected abstract void drawVao();
+	protected abstract void drawVao(Shader shader);
 
 
 
@@ -67,7 +67,7 @@ public abstract class DrawableEntity extends Entity {
 		shader.setModelMatrix(getUpdatedModelMatrix());
 		shader.setRenderMode(renderMode);
 		setPerDrawUniforms(shader);
-		drawVao();
+		drawVao(shader);
 		if (drawBoundingBox) {
 			shader.setRenderMode(RenderMode.boundingBox);
 			glDisable(GL_CULL_FACE);

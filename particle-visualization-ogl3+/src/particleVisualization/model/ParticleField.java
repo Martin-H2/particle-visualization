@@ -1,6 +1,13 @@
 package particleVisualization.model;
 
+import static org.lwjgl.opengl.GL11.GL_FLOAT;
+import static org.lwjgl.opengl.GL11.glDrawArrays;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import java.nio.FloatBuffer;
 import java.util.List;
+import java.util.Random;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
@@ -9,6 +16,8 @@ import org.lwjgl.util.vector.Vector4f;
 import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.enums.RenderMode;
+import particleVisualization.enums.ShaderLayout;
+import particleVisualization.enums.UniformName;
 import particleVisualization.rendering.*;
 import particleVisualization.util.MiscUtils;
 
@@ -19,9 +28,9 @@ public class ParticleField extends DrawableEntity {
 	private double				currentFrameIndexD		= 0;
 
 	private final Vector4f		globalRgba;
-	private final int			maxParticlesDisplayed	= 1000;
+	private int					maxParticlesDisplayed	= 3000;
 	private final int			particlesPerFrame;
-	private int					numberOfDrawnFrames		= 1;
+	private int					speedLineLength			= 1;
 	private float				tailLength				= 0;
 	private boolean				paused					= true;
 	private float				dataFps					= SimpleObjectViewer.refreshRate;
@@ -29,9 +38,14 @@ public class ParticleField extends DrawableEntity {
 
 	private final float			mouseSensitivity		= 0.15f;
 
+	private static Random		random					= new Random();
+	private FloatBuffer			fb;
+
 
 	public ParticleField(MmpldData particleData, Texture spriteTexture) {
-		super(spriteTexture, particleData.getDataFrames().get(0), particleData.getNumberOfDataFrames() * particleData.getParticlesPerFrame(), GL11.GL_POINTS, RenderMode.textured);
+		super(spriteTexture, particleData.getDataFrames().get(0),
+				particleData.getNumberOfDataFrames() * particleData.getParticlesPerFrame(),
+				GL11.GL_POINTS, RenderMode.pointSprite);
 		uploadedFrames = 1;
 		dataFrames = particleData.getDataFrames();
 		globalRgba = particleData.getGlobalRgba();
@@ -41,28 +55,59 @@ public class ParticleField extends DrawableEntity {
 		drawBoundingBox(true);
 		GL11.glEnable(GL20.GL_POINT_SPRITE);
 		GL11.glEnable(GL32.GL_PROGRAM_POINT_SIZE);
-		vertexArrayObject.setupIndirectBuffer();
+		//vertexArrayObject.setupIndirectBuffer();
+		//fb = MiscUtils.createFloatBuffer(dataFrames.get(0));
 	}
 
 	@Override
 	protected void setPerDrawUniforms(Shader shader) {
+		shader.setUniform1f(UniformName.spriteSize, 0.04f);
 	}
 
 	@Override
-	protected void drawVao() {
+	protected void drawVao(Shader shader) {
 		//vertexArrayObject.drawIndirect();
-		vertexArrayObject.draw(currentFrameIndex * particlesPerFrame, numberOfDrawnFrames * particlesPerFrame, true);
+		vertexArrayObject.draw((currentFrameIndex + speedLineLength) * particlesPerFrame, maxParticlesDisplayed, true);
+
+		drawSpeedLines(shader);
 	}
 
-	//	public void increaseMaxParticles(int maxParticlesInc) {
-	//		maxParticlesDisplayed += maxParticlesInc;
-	//		if (maxParticlesDisplayed < 0) {
-	//			maxParticlesDisplayed = 1;
-	//		}
-	//		if (maxParticlesDisplayed > particlesPerFrame) {
-	//			maxParticlesDisplayed = particlesPerFrame;
-	//		}
-	//	}
+	private void drawSpeedLines(Shader shader) {
+		shader.setRenderMode(RenderMode.globalColored);
+
+		//System.out.println("FRAME_LAYOUT: " + MiscUtils.vertexLayoutToString(dataFrames.get(0), 3, 3));
+		fb = MiscUtils.frameLayoutToSpeedlineLayout(dataFrames, currentFrameIndex, speedLineLength, fb, maxParticlesDisplayed);
+		//System.out.println("SLINE_LAYOUT: " + MiscUtils.vertexLayoutToString(fb, 3, 3));
+
+		int vboId = glGenBuffers();
+		glBindBuffer(GL_ARRAY_BUFFER, vboId);
+		glBufferData(GL_ARRAY_BUFFER, fb, GL_STREAM_DRAW); //1260 - 1280 fps
+		glVertexAttribPointer(ShaderLayout.in_Position.ordinal(), 3, GL_FLOAT, false, 0, 0);
+		glEnableVertexAttribArray(ShaderLayout.in_Position.ordinal());
+
+		//		GL11.glEnable(GL31.GL_PRIMITIVE_RESTART);
+		//		GL31.glPrimitiveRestartIndex(0);
+		glDrawArrays(GL11.GL_LINES, 0, fb.limit());
+
+		//draw mini points
+		//		shader.setUniform1f(UniformName.spriteSize, 0.01f);
+		//		shader.setRenderMode(RenderMode.pointSprite);
+		//		glDrawArrays(GL11.GL_POINTS, 0, fb.limit());
+		//		GL11.glDisable(GL31.GL_PRIMITIVE_RESTART);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glDeleteBuffers(vboId);
+	}
+
+	public void increaseMaxParticles(int maxParticlesInc) {
+		maxParticlesDisplayed += maxParticlesInc;
+		if (maxParticlesDisplayed <= 0) {
+			maxParticlesDisplayed = 1;
+		}
+		if (maxParticlesDisplayed > particlesPerFrame) {
+			maxParticlesDisplayed = particlesPerFrame;
+		}
+	}
 
 
 
@@ -70,18 +115,29 @@ public class ParticleField extends DrawableEntity {
 	public void update() {
 		//TODO send new dataFrames to GPU
 		if (dataFrames.size() > uploadedFrames) {
-			vertexArrayObject.appendPositionData(dataFrames.get(uploadedFrames));
+			vertexArrayObject.appendPositionData(dataFrames.get(uploadedFrames)); //FIXME can be null sometimes ...
 			uploadedFrames++;
 		}
 
 		if (!paused) {
-			currentFrameIndexD = (currentFrameIndexD + dataFps / SimpleObjectViewer.getFps()) % uploadedFrames;
+			currentFrameIndexD = (currentFrameIndexD + dataFps / SimpleObjectViewer.getFps()) % (uploadedFrames - speedLineLength);
 			currentFrameIndex = (int) currentFrameIndexD;
 		}
+
+
+		//vertexArrayObject.testVboMapping(particlesPerFrame * 3); //566 fps
+
+
 
 		float scaleStep = SimpleObjectViewer.getFrameTimeMs() / 1000.0f;
 
 
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_KP_ADD)) {
+			increaseMaxParticles(10);
+		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_KP_SUBTRACT)) {
+			increaseMaxParticles(-10);
+		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_E)) {
 			scaleClipped(1 + scaleStep);
 		}
@@ -89,12 +145,12 @@ public class ParticleField extends DrawableEntity {
 			scaleClipped(1 - scaleStep);
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_F)) {
-			tailLength = MiscUtils.clip(tailLength * (1 + scaleStep) + 10 * scaleStep, 0, uploadedFrames - 1);
-			numberOfDrawnFrames = (int) tailLength + 1;
+			tailLength = MiscUtils.clip(tailLength * (1 + scaleStep) + 10 * scaleStep, 0, uploadedFrames - 2);
+			speedLineLength = (int) tailLength + 1;
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_C)) {
-			tailLength = MiscUtils.clip(tailLength * (1 - scaleStep) - 10 * scaleStep, 0, uploadedFrames - 1);
-			numberOfDrawnFrames = (int) tailLength + 1;
+			tailLength = MiscUtils.clip(tailLength * (1 - scaleStep) - 10 * scaleStep, 0, uploadedFrames - 2);
+			speedLineLength = (int) tailLength + 1;
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_X)) {
 			dataFps = MiscUtils.clip(dataFps * (1 + scaleStep), 1, 1000);
@@ -128,8 +184,8 @@ public class ParticleField extends DrawableEntity {
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFps, paused ? 0 : dataFps);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrame, currentFrameIndex);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrameCount, dataFrames.size());
-		HeadUpDisplay.putDebugValue(HudDebugKeys.numTailSegments, numberOfDrawnFrames - 1);
-		HeadUpDisplay.putDebugValue(HudDebugKeys.numObjects, particlesPerFrame * numberOfDrawnFrames);
+		HeadUpDisplay.putDebugValue(HudDebugKeys.numTailSegments, speedLineLength - 1);
+		HeadUpDisplay.putDebugValue(HudDebugKeys.numObjects, particlesPerFrame * speedLineLength + particlesPerFrame);
 	}
 
 }

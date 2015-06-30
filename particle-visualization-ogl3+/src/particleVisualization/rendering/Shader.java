@@ -25,7 +25,7 @@ public class Shader {
 
 	public Shader(Matrix4f projectionMatrix, String vertexShaderName, String fragmentShaderName) {
 		shaderProgramId = ShaderUtils.buildShader(vertexShaderName, fragmentShaderName);
-		perShaderUniformLocations = new EnumMap<UniformName, Integer>(UniformName.class); // blazing lookup speed ! O(1)
+		perShaderUniformLocations = new EnumMap<UniformName, Integer>(UniformName.class);
 		for (UniformName uniform: UniformName.values()) {
 			int loc = glGetUniformLocation(shaderProgramId, uniform.toString());
 			if (loc != -1) {
@@ -42,7 +42,8 @@ public class Shader {
 		setRenderMode(RenderMode.textured);
 		setUniform1f(UniformName.spriteSize, 0.06f); //TODO cleanup
 		setUniform2f(UniformName.screenSize, SimpleObjectViewer.windowWidth, SimpleObjectViewer.windowHeight);
-		setUniform4f(UniformName.globalColor, .7f, .7f, .7f, 1);
+		setUniform4f(UniformName.globalColor, .3f, .3f, .6f, 1);
+		setUniform4f(UniformName.bboxColor, .7f, .7f, .7f, 1);
 		disable();
 	}
 
@@ -80,7 +81,7 @@ public class Shader {
 		glUseProgram(0);
 	}
 
-	private void setUniform1f(UniformName uniform, float f) {
+	public void setUniform1f(UniformName uniform, float f) {
 		if (perShaderUniformLocations.get(uniform) != null) {
 			glUniform1f(perShaderUniformLocations.get(uniform), f);
 		}

@@ -3,7 +3,8 @@ package particleVisualization.enums;
 
 public enum UniformName {
 
-	// ordering doesnt matter
+	// ordering doesnt matter, enums only for lookup map
+	// positions will be stored per shader
 
 	//Mat4f
 	modelMatrix,
@@ -12,6 +13,7 @@ public enum UniformName {
 
 	//vec4f
 	globalColor,
+	bboxColor,
 
 	//vec2i
 	screenSize,

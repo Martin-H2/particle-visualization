@@ -3,6 +3,7 @@ package particleVisualization.util;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.List;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Vector3f;
 
@@ -66,4 +67,71 @@ public class MiscUtils {
 		};
 	}
 
+
+	// [xyz xyz xyz ...] partikel
+	// [xyz xyz xyz ...] partikel
+	// [xyz xyz xyz ...] partikel
+	// [xyz xyz xyz ...] partikel
+
+	public static FloatBuffer frameLayoutToSpeedlineLayout(List<float[]> dataFrames, int startingFrame, int frameCount, FloatBuffer fb, int particleCap) {
+		int particleCount = dataFrames.get(startingFrame).length / 3;
+		if (particleCap > 0) {
+			particleCount = Math.min(particleCount, particleCap);
+		}
+		int floatCount = dataFrames.get(startingFrame).length * frameCount * 2 - 2 * particleCount;
+
+		if (fb == null || fb.capacity() != floatCount) {
+			fb = BufferUtils.createFloatBuffer(floatCount);
+		}
+		else {
+			fb.clear();
+		}
+
+
+		for (int p = 0; p < particleCount; p++) {
+			for (int f = 0; f < frameCount - 1; f++) {
+				putVertex(fb, p, dataFrames.get(startingFrame + f), dataFrames.get(startingFrame + f + 1));
+			}
+			//fb.put(1000); //TODO restart index ?
+		}
+
+		fb.flip();
+		return fb;
+	}
+
+	private static void putVertex(FloatBuffer fb, int particleIndex, float[] frame, float[] nextFrame) {
+		float x1 = frame[3 * particleIndex];
+		float y1 = frame[3 * particleIndex + 1];
+		float z1 = frame[3 * particleIndex + 2];
+		float x2 = nextFrame[3 * particleIndex];
+		float y2 = nextFrame[3 * particleIndex + 1];
+		float z2 = nextFrame[3 * particleIndex + 2];
+		if (x2 > x1 && Math.abs(y2 - y1) < 0.3f && Math.abs(z2 - z1) < 0.3f) {
+			fb.put(x1).put(y1).put(z1);
+			fb.put(x2).put(y2).put(z2);
+		}
+	}
+
+	public static String vertexLayoutToString(float[] vertices, int floatsPerVertex, int vertexCount) {
+		StringBuilder output = new StringBuilder();
+		output.append("[ ");
+		for (int i = 0; i < floatsPerVertex * vertexCount; i++) {
+			if (i != 0)
+				if (i % floatsPerVertex == 0) {
+					output.append(" | ");
+				}
+				else {
+					output.append(", ");
+				}
+			output.append(vertices[i]);
+		}
+		output.append(" ]");
+		return output.toString();
+	}
+
+	public static String vertexLayoutToString(FloatBuffer fb, int floatsPerVertex, int vertexCount) {
+		float[] a = new float[floatsPerVertex * vertexCount];
+		fb.get(a);
+		return vertexLayoutToString(a, floatsPerVertex, vertexCount);
+	}
 }

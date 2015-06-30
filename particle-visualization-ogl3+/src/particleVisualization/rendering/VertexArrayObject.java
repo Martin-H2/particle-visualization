@@ -9,12 +9,16 @@ import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Random;
 import org.lwjgl.opengl.*;
 import particleVisualization.enums.ShaderLayout;
 import particleVisualization.util.MiscUtils;
 
 public class VertexArrayObject {
+
+	private static Random	random	= new Random();
 
 	private int				vertexCountTotal;
 	private final int		vaoId;
@@ -133,9 +137,9 @@ public class VertexArrayObject {
 	}
 
 	public void appendPositionData(float[] newPositions) {
-		glBindBuffer(GL15.GL_ARRAY_BUFFER, vboId); //TODO mit draw kombinieren ?
+		glBindBuffer(GL_ARRAY_BUFFER, vboId); //TODO mit draw kombinieren ?
 		glBufferSubData(GL_ARRAY_BUFFER, positionBufferByteOffset, MiscUtils.createFloatBuffer(newPositions));
-		glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		positionBufferByteOffset += newPositions.length * 4;
 		vertexCountTotal += newPositions.length / 3;
 	}
@@ -145,6 +149,20 @@ public class VertexArrayObject {
 		GL15.glDeleteBuffers(vboId);
 		GL15.glDeleteBuffers(iboId);
 		GL30.glDeleteVertexArrays(vaoId);
+	}
+
+	public void testVboMapping(int numberOfFloatsBound) {
+		glBindBuffer(GL_ARRAY_BUFFER, vboId);
+		FloatBuffer fb = GL30.glMapBufferRange(GL15.GL_ARRAY_BUFFER, 0, numberOfFloatsBound * Float.BYTES, GL30.GL_MAP_WRITE_BIT | GL30.GL_MAP_UNSYNCHRONIZED_BIT, null).asFloatBuffer();
+		//System.out.println("=== p.pos ===" + fb.toString());
+		//fb.position(0);
+		for (int i = 0; i < fb.capacity(); i++) {
+			float f = fb.get(i);
+			//System.out.println(f);
+			fb.put(i, (float) (f + random.nextGaussian() * 0.001));
+		}
+		glUnmapBuffer(GL15.GL_ARRAY_BUFFER);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
 

@@ -4,18 +4,15 @@ import static org.lwjgl.glfw.Callbacks.errorCallbackPrint;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
-
 import java.nio.ByteBuffer;
-
 import org.lwjgl.Sys;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWvidmode;
-import org.lwjgl.opengl.GL43;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.system.libffi.Closure;
-
 import particleVisualization.model.MmpldData;
+import particleVisualization.util.MessageSystem;
 
 public class SimpleObjectViewer {
 
@@ -73,15 +70,13 @@ public class SimpleObjectViewer {
 		SimpleObjectViewer.refreshRate = GLFWvidmode.refreshRate(vidMode);
 	}
 
+
+
 	private void setupOpenGL() {
 		GLContext context = GLContext.createFromCurrent();
 		System.out.println("openGL version: " + glGetString(GL_VERSION));
 		if (DEBUG_MODE) {
-			glEnable(GL43.GL_DEBUG_OUTPUT);
-			debugMessageCallback = context.setupDebugMessageCallback(System.out);
-			if (!context.getCapabilities().GL_AMD_debug_output && !context.getCapabilities().GL_ARB_debug_output && !context.getCapabilities().GL_KHR_debug) {
-				System.out.println("no ARB/AMD/KHR debug output capabilities");
-			}
+			debugMessageCallback = MessageSystem.enableDebugging(context, System.err);
 		}
 		glViewport(0, 0, windowWidth, windowHeight);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);

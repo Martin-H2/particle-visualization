@@ -1,9 +1,10 @@
 #version 130
 
 uniform sampler2D textureUnitId;
+uniform int renderMode;
+uniform vec4 globalColor;
+uniform vec4 bboxColor;
 
-in vec4 pass_Position;
-in vec4 pass_Color;
 in vec2 pass_TextureCoord;
 
 out vec4 out_Color;
@@ -11,6 +12,18 @@ out vec4 out_Color;
 
 void main(void) {
 	
-	out_Color = texture(textureUnitId, pass_TextureCoord);
+	switch(renderMode) {
+    case 0:
+        out_Color = texture(textureUnitId, pass_TextureCoord);
+        break;
+    case 3:
+        out_Color = globalColor;
+        break;
+    case 5:
+        out_Color = bboxColor;
+        break;
+   }
+
+   
 	
 }

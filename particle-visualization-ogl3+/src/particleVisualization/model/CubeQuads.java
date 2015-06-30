@@ -56,7 +56,7 @@ public class CubeQuads extends DrawableEntity {
 	}
 
 	@Override
-	protected void drawVao() {
+	protected void drawVao(Shader shader) {
 		vertexArrayObject.draw();
 	}
 
