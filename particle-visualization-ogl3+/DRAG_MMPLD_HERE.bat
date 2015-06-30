@@ -20,7 +20,7 @@ rem call :reloadAdminRights
 if /i "%~x1" NEQ ".MMPLD" (
 	call :error "mmpld file needed as parameter"
 ) else (
-	start "" /b /high /wait java -Djava.library.path="natives/x%bitArchitecture%" -Xmx4G -jar "mmpld_visualizer.jar" "%~dpnx1"
+	start "" /b /high /wait java -Djava.library.path="lib/natives/x%bitArchitecture%" -Xmx4G -jar "mmpld_visualizer.jar" "%~dpnx1"
 )
 
 
