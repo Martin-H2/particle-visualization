@@ -3,7 +3,7 @@
     <!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="create_run_jar">
-        <jar destfile="D:/build/Git/particle-visualization/particle-visualization-ogl3+/build/mmpld_visualizer.jar">
+        <jar destfile="D:/build/Git/particle-visualization/particle-visualization-ogl3+/mmpld_visualizer.jar">
             <manifest>
                 <attribute name="Main-Class" value="particleVisualization.ParticleVisualizationOGL3"/>
                 <attribute name="Class-Path" value=". lib/lwjgl.jar lib/lwjgl_util.jar lib/slick.jar"/>
@@ -11,13 +11,8 @@
             <fileset dir="D:/build/Git/particle-visualization/particle-visualization-ogl3+/bin"/>
             <fileset dir="D:/build/java/library_projects/LWJGL2/bin"/>
         </jar>
-    	<!--<delete dir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>
-        <mkdir dir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>
-        <copy file="D:/build/java/library_projects/LWJGL2/lib/jar/lwjgl.jar" todir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>
-        <copy file="D:/build/java/library_projects/LWJGL2/lib/jar/lwjgl_util.jar" todir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>
-        <copy file="D:/build/java/library_projects/LWJGL2/lib/jar/slick.jar" todir="D:/build/Git/particle-visualization/particle-visualization/build/lib"/>-->
-    	<exec dir="D:/build/Git/particle-visualization/particle-visualization-ogl3+/build" executable="java">
-	        <arg line="-Djava.library.path='natives/x64/' -Xmx4G -jar 'mmpld_visualizer.jar' 'D:\tools\MegaMol\blasen_all.mmpld'"/>
+     	<exec dir="D:/build/Git/particle-visualization/particle-visualization-ogl3+" executable="java">
+	        <arg line="-Djava.library.path='lib/natives/x64/' -Xmx4G -jar 'mmpld_visualizer.jar' 'D:\tools\MegaMol\blasen_all.mmpld'"/>
 	    </exec>
     </target>
 </project>
