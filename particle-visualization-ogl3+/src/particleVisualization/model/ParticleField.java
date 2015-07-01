@@ -1,18 +1,22 @@
 package particleVisualization.model;
 
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.glDrawArrays;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.List;
 import java.util.Random;
+
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL14;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.util.vector.Vector4f;
+
 import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.enums.RenderMode;
@@ -87,7 +91,10 @@ public class ParticleField extends DrawableEntity {
 
 		//		GL11.glEnable(GL31.GL_PRIMITIVE_RESTART);
 		//		GL31.glPrimitiveRestartIndex(0);
-		glDrawArrays(GL11.GL_LINES, 0, fb.limit());
+//		glDrawArrays(GL11.GL_LINES, 0, fb.limit());
+		IntBuffer startingIndicesArray = MiscUtils.createIntBuffer(new int[] {0});
+		IntBuffer numberOfverticesArray = MiscUtils.createIntBuffer(new int[] {speedLineLength-1});
+		GL14.glMultiDrawArrays(GL11.GL_LINE_STRIP, startingIndicesArray, numberOfverticesArray);
 
 		//draw mini points
 		//		shader.setUniform1f(UniformName.spriteSize, 0.01f);
@@ -185,7 +192,7 @@ public class ParticleField extends DrawableEntity {
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrame, currentFrameIndex);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrameCount, dataFrames.size());
 		HeadUpDisplay.putDebugValue(HudDebugKeys.numTailSegments, speedLineLength - 1);
-		HeadUpDisplay.putDebugValue(HudDebugKeys.numObjects, particlesPerFrame * speedLineLength + particlesPerFrame);
+		HeadUpDisplay.putDebugValue(HudDebugKeys.numObjects, particlesPerFrame * speedLineLength);
 	}
 
 }
