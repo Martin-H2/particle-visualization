@@ -137,7 +137,7 @@ public class VertexArrayObject {
 	}
 
 	public void appendPositionData(float[] newPositions) {
-		glBindBuffer(GL_ARRAY_BUFFER, vboId); //TODO mit draw kombinieren ?
+		glBindBuffer(GL_ARRAY_BUFFER, vboId); //TODO combine with draw
 		glBufferSubData(GL_ARRAY_BUFFER, positionBufferByteOffset, MiscUtils.createFloatBuffer(newPositions));
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		positionBufferByteOffset += newPositions.length * 4;

@@ -119,7 +119,7 @@ public class MmpldData {
 
 
 		Vector4f globalRgba = null;
-		List<float[]> dataFrames = new ArrayList<float[]>(numberOfDataFrames);
+		List<float[]> dataFrames = new ArrayList<float[]>(Math.min(numberOfDataFrames, MAX_FRAMES_READ));
 		//Stopwatch stopwatch = new Stopwatch();
 
 		System.out.println("reading 1st data-frame...");

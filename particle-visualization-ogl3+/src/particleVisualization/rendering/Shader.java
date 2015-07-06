@@ -15,16 +15,25 @@ import particleVisualization.util.ShaderUtils;
 
 public class Shader {
 
-	private static final FloatBuffer			matrix4x4Buffer	= BufferUtils.createFloatBuffer(16);
+	private static final FloatBuffer		matrix4x4Buffer	= BufferUtils.createFloatBuffer(16);
 
-	private final int							shaderProgramId;
-	private final EnumMap<UniformName, Integer>	perShaderUniformLocations;
-	private RenderMode							renderMode;
+	private final int						shaderProgramId;
+	private EnumMap<UniformName, Integer>	perShaderUniformLocations;
+	private RenderMode						renderMode;
 
 
 
 	public Shader(Matrix4f projectionMatrix, String vertexShaderName, String fragmentShaderName) {
 		shaderProgramId = ShaderUtils.buildShader(vertexShaderName, fragmentShaderName);
+		setup(projectionMatrix, 0);
+	}
+
+	public Shader(Matrix4f projectionMatrix, String vertexShaderName, String geometryShaderName, String fragmentShaderName) {
+		shaderProgramId = ShaderUtils.buildShader(vertexShaderName, geometryShaderName, fragmentShaderName);
+		setup(projectionMatrix, 0);
+	}
+
+	public final void setup(Matrix4f projectionMatrix, int textureUnitId) {
 		perShaderUniformLocations = new EnumMap<UniformName, Integer>(UniformName.class);
 		for (UniformName uniform: UniformName.values()) {
 			int loc = glGetUniformLocation(shaderProgramId, uniform.toString());
@@ -32,10 +41,6 @@ public class Shader {
 				perShaderUniformLocations.put(uniform, loc);
 			}
 		}
-		setup(projectionMatrix, 0);
-	}
-
-	public final void setup(Matrix4f projectionMatrix, int textureUnitId) {
 		enable();
 		setProjectionMatrix(projectionMatrix);
 		setTextureUnitId(textureUnitId);

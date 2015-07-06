@@ -1,17 +1,13 @@
 package particleVisualization.rendering;
 
 import static org.lwjgl.opengl.GL11.*;
-
 import java.awt.image.BufferedImage;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import javax.imageio.ImageIO;
-
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
-
 import particleVisualization.util.MiscUtils;
 
 public class Texture {
@@ -40,7 +36,7 @@ public class Texture {
 
 
 
-	private int loadFromFile(String path) { //TODO better solution ?
+	private int loadFromFile(String path) {
 		int[] pixels = null;
 		try {
 			InputStream in = new FileInputStream(path);
@@ -58,10 +54,10 @@ public class Texture {
 		int[] data = new int[width * height];
 		for (int i = 0; i < width * height; i++) {
 			int a = (pixels[i] & 0xff000000) >> 24;
-		int r = (pixels[i] & 0xff0000) >> 16;
-		int g = (pixels[i] & 0xff00) >> 8;
-		int b = pixels[i] & 0xff;
-		data[i] = a << 24 | b << 16 | g << 8 | r;
+			int r = (pixels[i] & 0xff0000) >> 16;
+			int g = (pixels[i] & 0xff00) >> 8;
+			int b = pixels[i] & 0xff;
+			data[i] = a << 24 | b << 16 | g << 8 | r;
 		}
 
 		int result = glGenTextures();

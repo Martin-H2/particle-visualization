@@ -16,8 +16,8 @@ import particleVisualization.util.MiscUtils;
 public abstract class DrawableEntity extends Entity {
 
 
-	private final Vector3f				modelScale		= new Vector3f(1, 1, 1);
-	private final Matrix4f				modelMatrix		= new Matrix4f();
+	private final Vector3f				modelScale			= new Vector3f(1, 1, 1);
+	private Matrix4f					modelMatrix			= new Matrix4f();
 
 	//	private float[] 		vertices;
 	protected final VertexArrayObject	vertexArrayObject;
@@ -26,7 +26,9 @@ public abstract class DrawableEntity extends Entity {
 	private RenderMode					renderMode;
 
 	private Vector3f					bBoxMin, bBoxMax, bBoxMid;
-	private boolean						drawBoundingBox	= false;
+	private boolean						drawBoundingBox		= false;
+	private boolean						modelMatrixLinked	= false;
+
 
 
 	/**
@@ -47,13 +49,18 @@ public abstract class DrawableEntity extends Entity {
 		vertexArrayObject = new VertexArrayObject(initialPositions, null, null, primitiveMode, verticesTargetCount);
 	}
 
+	public DrawableEntity(RenderMode renderMode) {
+		this.renderMode = renderMode;
+		vertexArrayObject = null;
+		texture = null;
+	};
 
 
 	protected abstract void setPerDrawUniforms(Shader shader);
 
 	/**
 	 * e.g.: vertexArrayObject.draw();
-	 * 
+	 *
 	 * @param shader
 	 */
 	protected abstract void drawVao(Shader shader);
@@ -62,7 +69,7 @@ public abstract class DrawableEntity extends Entity {
 
 	public final void draw(Shader shader) {
 		if (texture != null) {
-			texture.bind(); //TODO group by "Material" ? (=shader + texture)
+			texture.bind();
 		}
 		shader.setModelMatrix(getUpdatedModelMatrix());
 		shader.setRenderMode(renderMode);
@@ -71,7 +78,7 @@ public abstract class DrawableEntity extends Entity {
 		if (drawBoundingBox) {
 			shader.setRenderMode(RenderMode.boundingBox);
 			glDisable(GL_CULL_FACE);
-			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);//TODO use global state buffer ?
+			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
 			getBBoxVertexArrayObject().draw();
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_FILL);
 			glEnable(GL_CULL_FACE);
@@ -157,13 +164,13 @@ public abstract class DrawableEntity extends Entity {
 		Matrix4f.rotate(MiscUtils.degreesToRadians(getYaw()), UNIT_VECTOR_Y, modelMatrix, modelMatrix);
 		Matrix4f.rotate(MiscUtils.degreesToRadians(getPitch()), UNIT_VECTOR_X, modelMatrix, modelMatrix);
 		Matrix4f.rotate(MiscUtils.degreesToRadians(getRoll()), UNIT_VECTOR_Z, modelMatrix, modelMatrix);
-		if (bBoxMin != null) { //TODO always correct rotation center offset
+		if (bBoxMin != null) {
 			Matrix4f.translate(getBoundingBoxMid().negate(null), modelMatrix, modelMatrix);
 		}
 	}
 
 	public Matrix4f getUpdatedModelMatrix() {
-		if (needsMatrixUpdate) {
+		if (needsMatrixUpdate && !modelMatrixLinked) {
 			updateModelMatrix();
 			needsMatrixUpdate = false;
 		}
@@ -174,7 +181,9 @@ public abstract class DrawableEntity extends Entity {
 		if (texture != null) {
 			texture.destroy();
 		}
-		vertexArrayObject.destroy();
+		if (vertexArrayObject != null) {
+			vertexArrayObject.destroy();
+		}
 	}
 
 	public boolean drawBoundingBox() {
@@ -196,6 +205,12 @@ public abstract class DrawableEntity extends Entity {
 
 	public void setRenderMode(RenderMode renderMode) {
 		this.renderMode = renderMode;
+	}
+
+
+	public void linkModelMatrix(Matrix4f modelMatrix) {
+		modelMatrixLinked = true;
+		this.modelMatrix = modelMatrix;
 	}
 
 }

@@ -3,7 +3,6 @@ package particleVisualization.model;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
-
 import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.rendering.HeadUpDisplay;
@@ -106,7 +105,7 @@ public class Camera extends Entity {
 
 	private void updateViewVector() {
 		viewVector.setX(viewMatrix.m20);
-		viewVector.setY(0); //TODO fix cam dive
+		viewVector.setY(0);
 		viewVector.setZ(viewMatrix.m22);
 		viewVector.normalise();
 	}

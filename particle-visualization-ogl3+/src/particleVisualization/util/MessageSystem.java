@@ -62,7 +62,10 @@ public class MessageSystem {
 			@Override
 			public void invoke(int source, int type, int id, int severity, int length, long message, long userParam) {
 				if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
-				stream.println("[LWJGL] OpenGL debug message");
+				if (severity == GL_DEBUG_SEVERITY_HIGH) throw new RuntimeException("[LWJGL] OpenGL error");
+				else {
+					stream.println("[LWJGL] OpenGL debug message");
+				}
 				printDetail(stream, "ID", String.format("0x%X", id));
 				printDetail(stream, "Source", getSource(source));
 				printDetail(stream, "Type", getType(type));
@@ -132,7 +135,10 @@ public class MessageSystem {
 
 			@Override
 			public void invoke(int source, int type, int id, int severity, int length, long message, long userParam) {
-				stream.println("[LWJGL] ARB_debug_output message");
+				if (severity == GL_DEBUG_SEVERITY_HIGH_ARB) throw new RuntimeException("[LWJGL] OpenGL error");
+				else {
+					stream.println("[LWJGL] ARB_debug_output message");
+				}
 				printDetail(stream, "ID", String.format("0x%X", id));
 				printDetail(stream, "Source", getSource(source));
 				printDetail(stream, "Type", getType(type));
@@ -198,7 +204,10 @@ public class MessageSystem {
 
 			@Override
 			public void invoke(int id, int category, int severity, int length, long message, long userParam) {
-				stream.println("[LWJGL] AMD_debug_output message");
+				if (severity == GL_DEBUG_SEVERITY_HIGH_AMD) throw new RuntimeException("[LWJGL] OpenGL error");
+				else {
+					stream.println("[LWJGL] AMD_debug_output message");
+				}
 				printDetail(stream, "ID", String.format("0x%X", id));
 				printDetail(stream, "Category", getCategory(category));
 				printDetail(stream, "Severity", getSeverity(severity));

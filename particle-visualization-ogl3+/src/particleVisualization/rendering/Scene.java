@@ -11,17 +11,18 @@ import particleVisualization.util.ScreenshotUtil;
 
 public class Scene {
 
-	public static Camera			camera;
-	private final InputManager		inputManager;
-	private final HeadUpDisplay		hud;
+	public static Camera		camera;
+	private final InputManager	inputManager;
+	private final HeadUpDisplay	hud;
 
-	private final Shader			simpleTexturedShader, spriteShader;
-	private Shader					simpleFlatShader;
+	private final Shader		simpleTexturedShader, spriteShader, speedLineShader;
+	private Shader				simpleFlatShader;
 
-	private final Texture			particleTex, gridTex;
-	private Texture					crateTex;
+	private final Texture		particleTex, gridTex;
+	private Texture				crateTex;
 
-	private final DrawableEntity	particleField, groundQuad;
+	ParticleField				particleField;
+	private final DrawableEntity	particleFieldSpeedLines, groundQuad;
 	private DrawableEntity			exampleCube1, exampleCube2;
 
 	boolean							drawGroundOrientation	= true;
@@ -44,6 +45,7 @@ public class Scene {
 
 		simpleTexturedShader = new Shader(camera.getProjectionMatrix(), "ModelViewProjection_vs.glsl", "Textured_fs.glsl");
 		spriteShader = new Shader(camera.getProjectionMatrix(), "Sprite_vs.glsl", "Sprite_fs.glsl");
+		speedLineShader = new Shader(camera.getProjectionMatrix(), "SpeedLine_vs.glsl", "SpeedLine_gs.glsl", "SpeedLine_fs.glsl");
 		//		simpleFlatShader = new Shader(camera.getProjectionMatrix(), "ModelViewProjection_vs.glsl", "DirectionalFlatShading_fs.glsl");
 
 		groundQuad = new Quad(gridTex);
@@ -55,13 +57,13 @@ public class Scene {
 		//		exampleCube2.translate(2, 0, 0);
 
 		particleField = new ParticleField(particleData, particleTex);
+		particleFieldSpeedLines = new ParticleFieldSpeedLines(particleField);
 		//		particleField.translate(-2, 0, 0);
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		//		glBlendFunc(GL_ONE, GL_ONE);
 	}
-
 
 
 	public void update() {
@@ -88,7 +90,7 @@ public class Scene {
 		HeadUpDisplay.putDebugValue(HudDebugKeys.fps, SimpleObjectViewer.getFpsAvg());
 		camera.update();
 		particleField.update();
-		groundQuad.update();
+		//groundQuad.update();
 	}
 
 
@@ -104,6 +106,7 @@ public class Scene {
 		//glEnable(GL_BLEND);
 		//glDisable(GL_DEPTH_TEST);
 		spriteShader.draw(camera.getViewMatrix(), particleField);
+		speedLineShader.draw(camera.getViewMatrix(), particleFieldSpeedLines);
 
 		hud.draw();
 
@@ -116,10 +119,11 @@ public class Scene {
 
 	}
 
-
 	public void destroy() {
 		//		exampleCube1.destroy();
 		spriteShader.destroy();
+		speedLineShader.destroy();
+		simpleTexturedShader.destroy();
 		groundQuad.destroy();
 		inputManager.cleanup();
 	}
