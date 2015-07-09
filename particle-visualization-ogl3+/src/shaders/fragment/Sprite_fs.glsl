@@ -6,6 +6,7 @@ uniform vec4 globalColor;
 uniform vec4 bboxColor;
 
 in vec2 pass_TextureCoord;
+in vec4 pass_Color;
 
 out vec4 out_Color;
 
@@ -26,11 +27,26 @@ out vec4 out_Color;
 void main(void) {
 
 	out_Color = globalColor;
+	//float average = (out_Color.r + out_Color.g + out_Color.b) / 3.0;
+	 //if (out_Color.b < 0.2 && dist_squared > .16)
+    //    out_Color.a = average * 5;
+    
+	//vec4 globalColor = vec4(0.6, 0.6, 1.0, 1.0);
+	//out_Color = colorize(out_Color, globalColor);
 	
+	//if (dist_squared > .23 && dist_squared < .24)
+	//      out_Color = vec4(.90, .10, .10, 1.0);
 
 	switch(renderMode) {
     case 0:
-        out_Color = texture(textureUnitId, pass_TextureCoord);
+        out_Color = texture(textureUnitId, gl_PointCoord);
+        break;
+    case 1:
+        out_Color = pass_Color;
+        break;
+    case 2:
+        out_Color = texture(textureUnitId, gl_PointCoord);
+        out_Color = mix(pass_Color, out_Color, 0.5);
         break;
     case 3:
         out_Color = globalColor;
@@ -39,30 +55,20 @@ void main(void) {
         out_Color = bboxColor;
         break;
     case 6:
-        out_Color = texture(textureUnitId, gl_PointCoord);
-		
-		//float average = (out_Color.r + out_Color.g + out_Color.b) / 3.0;
-		vec2 pos = mod(gl_PointCoord.xy, vec2(1.0)) - vec2(.5);
-	    float dist_squared = dot(pos, pos);
-	  
-		
-		if (dist_squared > .24)
-	        discard; 
-	      
-	 	//if (out_Color.b < 0.2 && dist_squared > .16)
-	    //    out_Color.a = average * 5;
-	    
-		//vec4 globalColor = vec4(0.6, 0.6, 1.0, 1.0);
-		//out_Color = colorize(out_Color, globalColor);
-		
-		//if (dist_squared > .23 && dist_squared < .24)
-		//      out_Color = vec4(.90, .10, .10, 1.0);
+        out_Color = vec4(1,0,0,1);
         break;
    }
 
+    //cut...
+    if (renderMode != 5) {
+		vec2 pos = mod(gl_PointCoord.xy, vec2(1.0)) - vec2(.5);
+	    float dist_squared = dot(pos, pos);
+		if (dist_squared > .24)
+	        discard; 
+    }
 
-   // add Fog...
-   
+
+	// add Fog...
 	const float LOG2 = 1.442695;
 	const float fogDensity = 0.01;
 	vec4 fogColor = vec4(0.1, 0.1, 0.1, 1);

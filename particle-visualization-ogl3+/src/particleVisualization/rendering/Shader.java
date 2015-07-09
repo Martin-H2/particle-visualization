@@ -45,9 +45,8 @@ public class Shader {
 		setProjectionMatrix(projectionMatrix);
 		setTextureUnitId(textureUnitId);
 		setRenderMode(RenderMode.textured);
-		setUniform1f(UniformName.spriteSize, 0.06f); //TODO cleanup
 		setUniform2f(UniformName.screenSize, SimpleObjectViewer.windowWidth, SimpleObjectViewer.windowHeight);
-		setUniform4f(UniformName.globalColor, .3f, .3f, .6f, 1);
+		setUniform4f(UniformName.globalColor, .3f, .3f, .6f, 1); //TODO cleanup
 		setUniform4f(UniformName.bboxColor, .7f, .7f, .7f, 1);
 		disable();
 	}

@@ -1,7 +1,6 @@
 package particleVisualization.model;
 
 import org.lwjgl.util.vector.Vector3f;
-
 import particleVisualization.util.MiscUtils;
 
 
@@ -20,6 +19,11 @@ public abstract class Entity {
 
 	public void translate(float xDelta, float yDelta, float zDelta) {
 		position.translate(xDelta, yDelta, zDelta);
+		needsMatrixUpdate = true;
+	}
+
+	public void setPosition(float x, float y, float z) {
+		position.set(x, y, z);
 		needsMatrixUpdate = true;
 	}
 

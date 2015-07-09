@@ -34,8 +34,8 @@ public class Scene {
 		inputManager = new InputManager(windowWidth, windowHeight);
 
 		camera = new Camera(windowWidth, windowHeight, 40);
-		camera.translate(4, 2.5f, -3);
-		camera.rotate(31, -47, 0);
+		camera.setFrontViewPos();
+		//camera.rotate(31, -47, 0);
 
 		//		crateTex = new Texture("crate.jpg");
 		gridTex = new Texture("gray_grid_dark.jpg");

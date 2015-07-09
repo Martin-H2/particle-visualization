@@ -22,7 +22,8 @@ public class VertexArrayObject {
 
 	private int				vertexCountTotal;
 	private final int		vaoId;
-	private final int		vboId;
+	private final int		pVboId;
+	private int				cVboId;
 	private int				indirectBufferId;
 	private int				iboId;
 	private int				tcboId	= -1;
@@ -30,15 +31,20 @@ public class VertexArrayObject {
 
 	private final boolean	indexedMode;
 	private final boolean	streamingMode;
-	private long			positionBufferByteOffset;
+	private long			positionBufferByteWriteOffset;
 	private IntBuffer		indirectBuffer;
 
-	public VertexArrayObject(float[] positions, byte[] indices, float[] textureCoordinates, int drawMode) {
-		this(positions, indices, textureCoordinates, drawMode, -1);
+
+	public VertexArrayObject(float[] initialPositions, float[] initialColors, int primitiveMode, int verticesTargetCount) {
+		this(initialPositions, initialColors, null, null, primitiveMode, verticesTargetCount);
 	}
 
-	public VertexArrayObject(float[] positions, byte[] indices, float[] textureCoordinates, int drawMode, int verticesTargetCount) {
-		this.drawMode = drawMode;
+	public VertexArrayObject(float[] positions, byte[] indices, float[] textureCoordinates, int primitiveMode) {
+		this(positions, null, indices, textureCoordinates, primitiveMode, -1);
+	}
+
+	public VertexArrayObject(float[] positions, float[] initialColors, byte[] indices, float[] textureCoordinates, int primitiveMode, int verticesTargetCount) {
+		drawMode = primitiveMode;
 		indexedMode = indices != null;
 		streamingMode = verticesTargetCount != -1;
 
@@ -47,12 +53,12 @@ public class VertexArrayObject {
 		glBindVertexArray(vaoId);
 
 
-		vboId = glGenBuffers();
-		glBindBuffer(GL_ARRAY_BUFFER, vboId);
+		pVboId = glGenBuffers();
+		glBindBuffer(GL_ARRAY_BUFFER, pVboId);
 		if (streamingMode) {
 			glBufferData(GL_ARRAY_BUFFER, verticesTargetCount * 3 * 4, GL_STREAM_DRAW);
 			glBufferSubData(GL_ARRAY_BUFFER, 0, MiscUtils.createFloatBuffer(positions));
-			positionBufferByteOffset = positions.length * 4;
+			positionBufferByteWriteOffset = positions.length * 4;
 		}
 		else {
 			glBufferData(GL_ARRAY_BUFFER, MiscUtils.createFloatBuffer(positions), GL_STATIC_DRAW);
@@ -66,6 +72,21 @@ public class VertexArrayObject {
 			glBufferData(GL_ARRAY_BUFFER, MiscUtils.createFloatBuffer(textureCoordinates), GL_STATIC_DRAW);
 			glVertexAttribPointer(ShaderLayout.in_TextureCoord.ordinal(), 2, GL_FLOAT, false, 0, 0);
 			glEnableVertexAttribArray(ShaderLayout.in_TextureCoord.ordinal());
+		}
+
+		if (initialColors != null) {
+			cVboId = glGenBuffers();
+			glBindBuffer(GL_ARRAY_BUFFER, cVboId);
+			if (streamingMode) {
+				//System.out.println("color data in streaming mode: " + initialColors.length);
+				glBufferData(GL_ARRAY_BUFFER, verticesTargetCount * 4, GL_STREAM_DRAW);
+				glBufferSubData(GL_ARRAY_BUFFER, 0, MiscUtils.createFloatBuffer(initialColors));
+			}
+			else {
+				glBufferData(GL_ARRAY_BUFFER, MiscUtils.createFloatBuffer(initialColors), GL_STATIC_DRAW);
+			}
+			glVertexAttribPointer(ShaderLayout.in_Color.ordinal(), 4, GL_UNSIGNED_BYTE, true, 4, 0); // "hack" - using 1 FLOAT as 4 UNSIGNED_BYTE (rgba)
+			glEnableVertexAttribArray(ShaderLayout.in_Color.ordinal());
 		}
 
 		if (indexedMode) {
@@ -136,24 +157,30 @@ public class VertexArrayObject {
 		GL43.glMultiDrawArraysIndirect(GL11.GL_LINE_STRIP, 0, 3, 0);
 	}
 
-	public void appendPositionData(float[] newPositions) {
-		glBindBuffer(GL_ARRAY_BUFFER, vboId); //TODO combine with draw
-		glBufferSubData(GL_ARRAY_BUFFER, positionBufferByteOffset, MiscUtils.createFloatBuffer(newPositions));
+	public void appendPositionAndColorData(float[] newPositions, float[] newColors) {
+		//System.out.println("appendPositionAndColorData: " + newPositions + newColors);
+		glBindBuffer(GL_ARRAY_BUFFER, pVboId);
+		glBufferSubData(GL_ARRAY_BUFFER, positionBufferByteWriteOffset, MiscUtils.createFloatBuffer(newPositions));
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		positionBufferByteOffset += newPositions.length * 4;
+		if (newColors != null) {
+			glBindBuffer(GL_ARRAY_BUFFER, cVboId);
+			glBufferSubData(GL_ARRAY_BUFFER, positionBufferByteWriteOffset / 3, MiscUtils.createFloatBuffer(newColors));
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+		}
+		positionBufferByteWriteOffset += newPositions.length * 4;
 		vertexCountTotal += newPositions.length / 3;
 	}
 
 	public void destroy() {
 		GL15.glDeleteBuffers(tcboId);
-		GL15.glDeleteBuffers(vboId);
+		GL15.glDeleteBuffers(pVboId);
 		GL15.glDeleteBuffers(iboId);
 		GL30.glDeleteVertexArrays(vaoId);
 	}
 
 	public void testVboMapping(int numberOfFloatsBound) {
-		glBindBuffer(GL_ARRAY_BUFFER, vboId);
-		FloatBuffer fb = GL30.glMapBufferRange(GL15.GL_ARRAY_BUFFER, 0, numberOfFloatsBound * Float.BYTES, GL30.GL_MAP_WRITE_BIT | GL30.GL_MAP_UNSYNCHRONIZED_BIT, null).asFloatBuffer();
+		glBindBuffer(GL_ARRAY_BUFFER, pVboId);
+		FloatBuffer fb = GL30.glMapBufferRange(GL15.GL_ARRAY_BUFFER, 0, numberOfFloatsBound * 4, GL30.GL_MAP_WRITE_BIT | GL30.GL_MAP_UNSYNCHRONIZED_BIT, null).asFloatBuffer();
 		//System.out.println("=== p.pos ===" + fb.toString());
 		//fb.position(0);
 		for (int i = 0; i < fb.capacity(); i++) {

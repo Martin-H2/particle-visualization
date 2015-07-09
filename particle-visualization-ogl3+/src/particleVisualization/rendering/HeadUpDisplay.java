@@ -40,6 +40,8 @@ public class HeadUpDisplay {
 		keyHelp.add(" c ... shorter trail");
 		keyHelp.add(" x ... faster");
 		keyHelp.add(" y ... slower");
+		keyHelp.add(" num+ ... more p.");
+		keyHelp.add(" num- ... less p.");
 		keyHelp.add(" TAB  play/pause");
 		keyHelp.add(" lMouse ... turn");
 	}

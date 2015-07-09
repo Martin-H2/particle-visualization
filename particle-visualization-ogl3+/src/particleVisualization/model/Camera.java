@@ -81,6 +81,13 @@ public class Camera extends Entity {
 			translate(0, -translationStep, 0);
 		}
 
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_F2)) {
+			setFrontViewPos();
+		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_F3)) {
+			setScreenShotPos();
+		}
+
 
 		if (InputManager.isLockedOnRightMouse()) {
 			addPitchClipped(InputManager.pollMouseYd() * mouseSensitivity, maxPitch);
@@ -92,6 +99,22 @@ public class Camera extends Entity {
 		HeadUpDisplay.putDebugValue(HudDebugKeys.camRot, MiscUtils.formatVec3(getRotation()));
 
 	}
+
+
+	public void setScreenShotPos() {
+		setPitch(31);
+		setYaw(-47);
+		setRoll(0);
+		setPosition(4, 2.5f, -3);
+	}
+
+	public void setFrontViewPos() {
+		setPitch(0);
+		setYaw(0);
+		setRoll(0);
+		setPosition(0, 0, -2);
+	}
+
 
 
 	private void updateViewMatrix() {

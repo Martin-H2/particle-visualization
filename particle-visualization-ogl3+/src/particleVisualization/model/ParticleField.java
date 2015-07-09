@@ -9,47 +9,59 @@ import org.lwjgl.opengl.GL32;
 import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.enums.RenderMode;
+import particleVisualization.enums.UniformName;
 import particleVisualization.rendering.*;
 import particleVisualization.util.MiscUtils;
 
 public class ParticleField extends DrawableEntity {
 
 	public final List<float[]>	dataFrames;
-	public int					currentFrameIndex		= 0;
-	private double				currentFrameIndexD		= 0;
+	private final List<float[]>	dataFramesColors;
+	public int					currentFrameIndex	= 0;
+	private double				currentFrameIndexD	= 0;
 
 	//private final Vector4f		globalRgba;
-	public int					maxParticlesDisplayed	= 3;
+	public int					maxParticlesDisplayed;
+	private float				maxParticlesDisplayedF;
 	public final int			particlesPerFrame;
-	private boolean				paused					= true;
-	private float				dataFps					= SimpleObjectViewer.refreshRate;
+	private boolean				paused				= true;
+	private float				dataFps				= SimpleObjectViewer.refreshRate;
 	private int					uploadedFrames;
-	private boolean				drawMiniPoints			= false;
-	public int					speedLineLength			= 0;
-	private float				speedLineLengthF		= 0;
+	private boolean				drawMiniPoints		= false;
+	public int					speedLineLength		= 0;
+	private float				speedLineLengthF	= 0;
 
-	private final float			mouseSensitivity		= 0.15f;
+	private final float			mouseSensitivity	= 0.15f;
+	public final float			globalRadius;
+	public final MmpldData		particleData;
 
 
 
 	public ParticleField(MmpldData particleData, Texture spriteTexture) {
 		super(spriteTexture, particleData.getDataFrames().get(0),
-				particleData.getNumberOfDataFrames() * particleData.getParticlesPerFrame(),
-				GL_POINTS, RenderMode.pointSprite);
+				particleData.isColorDataSet() ? particleData.getDataFramesColors().get(0) : null,
+				particleData.getNumberOfDataFrames() * particleData.getParticlesPerFrame(), GL_POINTS,
+				particleData.isColorDataSet() ? RenderMode.texturedAndColored : RenderMode.textured);
 		uploadedFrames = 1;
 		dataFrames = particleData.getDataFrames();
+		this.particleData = particleData;
+		dataFramesColors = particleData.getDataFramesColors();
 		//globalRgba = particleData.getGlobalRgba();
 		particlesPerFrame = particleData.getParticlesPerFrame();
+		globalRadius = particleData.getGlobalRadius();
 		setBoundingBoxMin(particleData.getBoxMin());
 		setBoundingBoxMax(particleData.getBoxMax());
 		drawBoundingBox(true);
 		glEnable(GL20.GL_POINT_SPRITE);
 		glEnable(GL32.GL_PROGRAM_POINT_SIZE);
+		maxParticlesDisplayed = particlesPerFrame;
+		maxParticlesDisplayedF = particlesPerFrame;
 		//vertexArrayObject.setupIndirectBuffer();
 	}
 
 	@Override
 	protected void setPerDrawUniforms(Shader shader) {
+		shader.setUniform1f(UniformName.spriteSize, globalRadius * 2);
 	}
 
 	@Override
@@ -60,16 +72,12 @@ public class ParticleField extends DrawableEntity {
 
 	}
 
-	public void increaseMaxParticles(int maxParticlesInc) {
-		maxParticlesDisplayed += maxParticlesInc;
-	}
-
 
 
 	@Override
 	public void update() {
 		if (dataFrames.size() > uploadedFrames) {
-			vertexArrayObject.appendPositionData(dataFrames.get(uploadedFrames));
+			vertexArrayObject.appendPositionAndColorData(dataFrames.get(uploadedFrames), particleData.isColorDataSet() ? dataFramesColors.get(uploadedFrames) : null);
 			uploadedFrames++;
 		}
 
@@ -88,10 +96,12 @@ public class ParticleField extends DrawableEntity {
 
 
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_KP_ADD)) {
-			increaseMaxParticles(10);
+			maxParticlesDisplayedF = maxParticlesDisplayedF * (1 + 2 * scaleStep) + 10 * scaleStep;
+			maxParticlesDisplayed = (int) maxParticlesDisplayedF;
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_KP_SUBTRACT)) {
-			increaseMaxParticles(-10);
+			maxParticlesDisplayedF = maxParticlesDisplayedF * (1 - 2 * scaleStep) - 10 * scaleStep;
+			maxParticlesDisplayed = (int) maxParticlesDisplayedF;
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_E)) {
 			scaleClipped(1 + scaleStep);
@@ -125,10 +135,11 @@ public class ParticleField extends DrawableEntity {
 			drawMiniPoints = !drawMiniPoints;
 		}
 
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_R)) {
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_F2) || InputManager.isKeyDown(GLFW.GLFW_KEY_F3)) {
 			setPitch(0);
 			setYaw(0);
 			setRoll(0);
+			setScale(1);
 		}
 		if (InputManager.isLockedOnLeftMouse()) {
 			addYaw(InputManager.pollMouseXd() * -mouseSensitivity);
@@ -139,6 +150,7 @@ public class ParticleField extends DrawableEntity {
 
 
 		// PROTECTION
+		maxParticlesDisplayedF = MiscUtils.clip(maxParticlesDisplayedF, 1, particlesPerFrame);
 		maxParticlesDisplayed = MiscUtils.clip(maxParticlesDisplayed, 1, particlesPerFrame);
 		speedLineLengthF = MiscUtils.clip(speedLineLengthF, 0, uploadedFrames - 100);
 		speedLineLength = MiscUtils.clip(speedLineLength, 0, uploadedFrames - 100);
@@ -153,6 +165,11 @@ public class ParticleField extends DrawableEntity {
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrameCount, dataFrames.size());
 		HeadUpDisplay.putDebugValue(HudDebugKeys.numTailSegments, speedLineLength);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.numObjects, maxParticlesDisplayed * speedLineLength * (drawMiniPoints ? 2 : 1) + maxParticlesDisplayed);
+	}
+
+
+	public MmpldData getParticleData() {
+		return particleData;
 	}
 
 }

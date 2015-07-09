@@ -17,7 +17,7 @@ import particleVisualization.enums.VertexDataType;
 
 public class MmpldData {
 
-	protected static final int		MAX_FRAMES_READ	= 3000;
+	protected static final int		MAX_FRAMES_READ	= 600;
 	protected static final boolean	READ_PARALLEL	= true;
 	//private static final Logger log = Logger.getLogger( MmpldData.class.getName() );
 
@@ -28,15 +28,24 @@ public class MmpldData {
 	private final Vector4f			globalRgba;
 	private final int				maxParticlesPerFrame;
 	private final int				numberOfDataFrames;
+	private final float				globalRadius;
+	private final List<float[]>		dataFramesColors;
+	private final boolean			hasColorData;
+	private final String			fileName;
 
 
-	public MmpldData(final Vector3f boxMin, final Vector3f boxMax, final List<float[]> dataFrames, final Vector4f globalRgba, final int particlesPerFrame, int numberOfDataFrames) {
+	public MmpldData(final Vector3f boxMin, final Vector3f boxMax, final List<float[]> dataFrames, List<float[]> dataFramesColors, final Vector4f globalRgba,
+			float globalRadius, final int particlesPerFrame, int numberOfDataFrames, String fileName) {
 		this.boxMin = boxMin;
 		this.boxMax = boxMax;
 		this.dataFrames = dataFrames;
+		this.dataFramesColors = dataFramesColors;
 		this.globalRgba = globalRgba;
+		this.globalRadius = globalRadius;
 		maxParticlesPerFrame = particlesPerFrame;
 		this.numberOfDataFrames = numberOfDataFrames;
+		hasColorData = dataFramesColors != null && !dataFramesColors.isEmpty();
+		this.fileName = fileName;
 	}
 
 
@@ -98,14 +107,14 @@ public class MmpldData {
 
 		skipBytes(byteBuffer, 24);
 		//		System.out.println("Data set BoundingBox:"
-		//				+ "\n	MIN:	" + byteBuffer.getFloat() + " / " + byteBuffer.getFloat() + " / " + byteBuffer.getFloat()
-		//				+ "\n	MAX:	" + byteBuffer.getFloat() + " / " + byteBuffer.getFloat() + " / " + byteBuffer.getFloat());
+		//			+ "\n	MIN:	" + byteBuffer.getFloat() + " / " + byteBuffer.getFloat() + " / " + byteBuffer.getFloat()
+		//			+ "\n	MAX:	" + byteBuffer.getFloat() + " / " + byteBuffer.getFloat() + " / " + byteBuffer.getFloat());
 
 		Vector3f boxMin = new Vector3f(byteBuffer.getFloat(), byteBuffer.getFloat(), byteBuffer.getFloat());
 		Vector3f boxMax = new Vector3f(byteBuffer.getFloat(), byteBuffer.getFloat(), byteBuffer.getFloat());
-		//		System.out.println("Data set ClippingBox:"
-		//				+ "\n	MIN:	" + boxMin.getX() + " / " + boxMin.getY() + " / " + boxMin.getZ()
-		//				+ "\n	MAX:	" + boxMax.getX() + " / " + boxMax.getY() + " / " + boxMax.getZ());
+		System.out.println("Data set ClippingBox:"
+			+ "\n	MIN:	" + boxMin.getX() + " / " + boxMin.getY() + " / " + boxMin.getZ()
+			+ "\n	MAX:	" + boxMax.getX() + " / " + boxMax.getY() + " / " + boxMax.getZ());
 
 		// SEEK TABLE
 		byteBuffer = ByteBuffer.allocateDirect((numberOfDataFrames + 1) * 8).order(ByteOrder.LITTLE_ENDIAN);
@@ -119,15 +128,12 @@ public class MmpldData {
 
 
 		Vector4f globalRgba = null;
-		List<float[]> dataFrames = new ArrayList<float[]>(Math.min(numberOfDataFrames, MAX_FRAMES_READ));
 		//Stopwatch stopwatch = new Stopwatch();
-
-		System.out.println("reading 1st data-frame...");
 
 
 
 		// 1st DATA FRAME
-		//System.out.println("========================= frameNumber index " + i + " =========================");
+		System.out.println("reading 1st data-frame...");
 		if (seekTable[1] - seekTable[0] != byteBuffer.capacity()) {
 			byteBuffer = ByteBuffer.allocateDirect((int) (seekTable[1] - seekTable[0])).order(ByteOrder.LITTLE_ENDIAN);
 			System.out.println("adjusting byteBuffer to next frameSize: " + byteBuffer.capacity());
@@ -143,15 +149,16 @@ public class MmpldData {
 		//System.out.println("frameNumber number: " + frameNumber);
 
 		VertexDataType vertexDataType = VertexDataType.enumCache[byteBuffer.get()];
-		//System.out.println("vertex data type: " + vertexDataType);
+		System.out.println("vertex data type: " + vertexDataType);
 
 		ColorDataType colorDataType = ColorDataType.enumCache[byteBuffer.get()];
-		//System.out.println("color data type: " + colorDataType);
+		System.out.println("color data type: " + colorDataType);
 
-		//float globalRadius = -1;
+		float globalRadius = -1;
 		if (vertexDataType == VertexDataType.FLOAT_XYZ || vertexDataType == VertexDataType.SHORT_XYZ) {
-			skipBytes(byteBuffer, 4);
-			//System.out.println("global radius: " + globalRadius);
+			//skipBytes(byteBuffer, 4);
+			globalRadius = byteBuffer.getFloat();
+			System.out.println("global radius: " + globalRadius);
 		}
 
 		if (colorDataType == ColorDataType.NONE) {
@@ -165,20 +172,18 @@ public class MmpldData {
 				+ " / range: " + byteBuffer.getFloat());
 		}
 
+		if (vertexDataType != VertexDataType.FLOAT_XYZ) throw new DataFormatException("only VertexDataType 'FLOAT_XYZ' implemented");
+		if (colorDataType != ColorDataType.NONE && colorDataType != ColorDataType.FLOAT_RGBA)
+			throw new DataFormatException("only ColorDataType 'NONE' and 'FLOAT_RGBA' implemented");
+		//TODO support for more data formats
+
 		int particlesPerFrame = (int) byteBuffer.getLong();
 		//System.out.println("particle count: " + pCount);
 
-		if (vertexDataType != VertexDataType.NONE) {
-			//FIXME: THIS IS ONLY FOR vertex data type: FLOAT_XYZ & color data type: NONE
-			float[] particles = new float[particlesPerFrame * 3]; //TODO use buffer directly ?
-			//byteBuffer.asFloatBuffer().get(particles);
-			for (int p = 0; p < particles.length; p++) {
-				particles[p] = byteBuffer.getFloat();
-				//System.out.println("particle" + p + ": " +  particles[p].toString());
-			}
-			//System.out.println("particle #0: " + particles[0]);
-			dataFrames.add(particles);
-		}
+		//byteBuffer.asFloatBuffer().get(particles);
+		final List<float[]> dataFrames = new ArrayList<float[]>(Math.min(numberOfDataFrames, MAX_FRAMES_READ));
+		final List<float[]> dataFramesColors = new ArrayList<float[]>(Math.min(numberOfDataFrames, MAX_FRAMES_READ));
+		addParticleFrames(byteBuffer, dataFrames, dataFramesColors, colorDataType, particlesPerFrame);
 
 
 
@@ -218,19 +223,13 @@ public class MmpldData {
 							+ " / range: " + byteBuffer.getFloat());
 					}
 
-					int pCount = (int) byteBuffer.getLong();
-					if (pCount != particlesPerFrame) {
-						System.err.println("error: frame #" + i + " has differing particle count. (" + pCount + " instead of " + particlesPerFrame + ")");
+					int particleCount = (int) byteBuffer.getLong();
+					if (particleCount != particlesPerFrame) {
+						System.err.println("error: frame #" + i + " has a differing particle count. (" + particleCount + " instead of " + particlesPerFrame + ")");
 					}
 
-					if (vertexDataType != VertexDataType.NONE) {
-						//FIXME: THIS IS ONLY FOR vertex data type: FLOAT_XYZ & color data type: NONE
-						float[] particles = new float[pCount * 3];
-						for (int p = 0; p < particles.length; p++) {
-							particles[p] = byteBuffer.getFloat();
-						}
-						dataFrames.add(particles);
-					}
+					addParticleFrames(byteBuffer, dataFrames, dataFramesColors, colorDataType, particlesPerFrame);
+
 					if (READ_PARALLEL) {
 						Thread.yield();
 						if ((i + 1) % 30 == 0) {
@@ -270,9 +269,43 @@ public class MmpldData {
 			frameLoader.run();
 		}
 
-		mmpldData = new MmpldData(boxMin, boxMax, dataFrames, globalRgba, particlesPerFrame, Math.min(numberOfDataFrames, MAX_FRAMES_READ));
+		mmpldData = new MmpldData(boxMin, boxMax, dataFrames, dataFramesColors, globalRgba, globalRadius, particlesPerFrame,
+				Math.min(numberOfDataFrames, MAX_FRAMES_READ), mmpldFile.getName());
 
 		return mmpldData;
+	}
+
+
+
+	private static void addParticleFrames(ByteBuffer sourceBuffer, List<float[]> framePosList, List<float[]> frameColorList, ColorDataType colorDataType, int particlesPerFrame) {
+		float[] positions = new float[particlesPerFrame * 3]; //TODO use buffer directly ?
+		float[] colors = new float[particlesPerFrame];
+		for (int p = 0; p < particlesPerFrame; p++) {
+			//			System.out.println("\n===================================== particle #" + p);
+			//			System.out.println("x: " + byteBuffer.getFloat());
+			//			System.out.println("y: " + byteBuffer.getFloat());
+			//			System.out.println("z: " + byteBuffer.getFloat());
+			//			System.out.println("r: " + byteBuffer.getFloat());
+			//			System.out.println("g: " + byteBuffer.getFloat());
+			//			System.out.println("b: " + byteBuffer.getFloat());
+			//			System.out.println("a: " + byteBuffer.getFloat());
+			positions[3 * p] = sourceBuffer.getFloat();
+			positions[3 * p + 1] = sourceBuffer.getFloat();
+			positions[3 * p + 2] = sourceBuffer.getFloat();
+			if (colorDataType == ColorDataType.FLOAT_RGBA) {
+				colors[p] = packRGBA(
+						floatToIntColor(sourceBuffer.getFloat()),
+						floatToIntColor(sourceBuffer.getFloat()),
+						floatToIntColor(sourceBuffer.getFloat()),
+						floatToIntColor(sourceBuffer.getFloat())
+					);
+				//skipBytes(sourceBuffer, 16);
+			}
+		}
+		if (colorDataType == ColorDataType.FLOAT_RGBA) {
+			frameColorList.add(colors);
+		}
+		framePosList.add(positions);
 	}
 
 
@@ -292,5 +325,36 @@ public class MmpldData {
 		return (short) (bb.get() & 0xff);
 	}
 
+
+
+	public float getGlobalRadius() {
+		return globalRadius;
+	}
+
+	public static int floatToIntColor(float f) {
+		return (int) (255 * f);
+	}
+
+	public static float packRGBA(int r, int g, int b, int a) {
+		return Float.intBitsToFloat(r << 0 | g << 8 | b << 16 | a << 24);
+	}
+
+
+
+	public List<float[]> getDataFramesColors() {
+		return dataFramesColors;
+	}
+
+
+
+	public boolean isColorDataSet() {
+		return hasColorData;
+	}
+
+
+
+	public String getFileName() {
+		return fileName;
+	}
 
 }

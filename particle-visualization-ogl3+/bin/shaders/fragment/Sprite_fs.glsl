@@ -6,9 +6,9 @@ uniform vec4 globalColor;
 uniform vec4 bboxColor;
 
 in vec2 pass_TextureCoord;
+in vec4 pass_Color;
 
 out vec4 out_Color;
-
 
 
 // vec4 toGrayscale(in vec4 color)
@@ -26,7 +26,7 @@ out vec4 out_Color;
 void main(void) {
 
 	out_Color = globalColor;
-	
+
 
 	switch(renderMode) {
     case 0:
@@ -40,6 +40,8 @@ void main(void) {
         break;
     case 6:
         out_Color = texture(textureUnitId, gl_PointCoord);
+        out_Color = vec4(1,0,0,1);
+
 		
 		//float average = (out_Color.r + out_Color.g + out_Color.b) / 3.0;
 		vec2 pos = mod(gl_PointCoord.xy, vec2(1.0)) - vec2(.5);

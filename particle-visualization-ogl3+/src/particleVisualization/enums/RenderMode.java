@@ -11,7 +11,6 @@ public enum RenderMode {
 	texturedAndColored, //2
 	globalColored, //3
 	globalColoredAndTextured, //4
-	boundingBox, //5
-	pointSprite //6
+	boundingBox //5
 
 }

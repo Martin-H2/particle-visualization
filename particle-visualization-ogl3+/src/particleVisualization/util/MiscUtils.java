@@ -82,7 +82,7 @@ public class MiscUtils {
 	// [xyz xyz xyz ...] partikel
 
 	public static FloatBuffer frameLayoutToSpeedlineLayout(List<float[]> dataFrames, int startingFrame, int frameCount, int skippedFrames, int particleCap,
-			FloatBuffer targetBuffer, IntBuffer startingIndicesList, IntBuffer numberOfVerticesList) {
+			FloatBuffer targetBuffer, IntBuffer startingIndicesList, IntBuffer numberOfVerticesList, boolean jumpCompensation) {
 		int particlesPerFrame = dataFrames.get(startingFrame).length / 3;
 		if (particleCap > 0) {
 			particlesPerFrame = Math.min(particlesPerFrame, particleCap);
@@ -119,22 +119,25 @@ public class MiscUtils {
 					break;
 				}
 
-				nextFrame = dataFrames.get(startingFrame - frameOffset - 1);
-				float x2 = nextFrame[3 * particleIndex];
-				float y2 = nextFrame[3 * particleIndex + 1];
-				float z2 = nextFrame[3 * particleIndex + 2];
-				if (x2 > x1 || Math.abs(y2 - y1) > 0.3f || Math.abs(z2 - z1) > 0.3f) {
-					//line wrap...
-					if (extraLineStripSpace > 0) {
-						numberOfVerticesList.put(verticesPerLinestrip);
-						verticesPerLinestrip = 0;
-						startingIndicesList.put(verticesTotal);
-						extraLineStripSpace--;
-					}
-					else {
-						break;
+				if (jumpCompensation) {
+					nextFrame = dataFrames.get(startingFrame - frameOffset - 1);
+					float x2 = nextFrame[3 * particleIndex];
+					float y2 = nextFrame[3 * particleIndex + 1];
+					float z2 = nextFrame[3 * particleIndex + 2];
+					if (x2 > x1 || Math.abs(y2 - y1) > 0.3f || Math.abs(z2 - z1) > 0.3f) {
+						//line wrap...
+						if (extraLineStripSpace > 0) {
+							numberOfVerticesList.put(verticesPerLinestrip);
+							verticesPerLinestrip = 0;
+							startingIndicesList.put(verticesTotal);
+							extraLineStripSpace--;
+						}
+						else {
+							break;
+						}
 					}
 				}
+
 			}
 			numberOfVerticesList.put(verticesPerLinestrip);
 			verticesPerLinestrip = 0;

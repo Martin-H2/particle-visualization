@@ -1,4 +1,4 @@
-package particleVisualization.rendering;
+package particleVisualization.model;
 
 import static org.lwjgl.opengl.GL11.GL_FLOAT;
 import static org.lwjgl.opengl.GL11.GL_LINE_STRIP;
@@ -12,8 +12,7 @@ import org.lwjgl.opengl.GL14;
 import particleVisualization.enums.RenderMode;
 import particleVisualization.enums.ShaderLayout;
 import particleVisualization.enums.UniformName;
-import particleVisualization.model.DrawableEntity;
-import particleVisualization.model.ParticleField;
+import particleVisualization.rendering.Shader;
 import particleVisualization.util.MiscUtils;
 
 
@@ -23,6 +22,7 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 	private final IntBuffer		startingIndicesList;
 	private final IntBuffer		numberOfverticesList;
 	private final ParticleField	particleField;
+	private boolean				jumpCompensation	= true;
 
 	public ParticleFieldSpeedLines(ParticleField particleField) {
 		super(RenderMode.globalColored);
@@ -31,11 +31,15 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 		startingIndicesList = BufferUtils.createIntBuffer(particleField.particlesPerFrame * 2);
 		numberOfverticesList = BufferUtils.createIntBuffer(particleField.particlesPerFrame * 2);
 		linkModelMatrix(particleField.getUpdatedModelMatrix());
+
+		if (particleField.getParticleData().getFileName().startsWith("dreikugeln")) { //TODO introduce clever autoselection
+			jumpCompensation = false;
+		}
 	}
 
 	@Override
 	protected void setPerDrawUniforms(Shader shader) {
-		shader.setUniform1f(UniformName.spriteSize, 0.025f);
+		shader.setUniform1f(UniformName.spriteSize, particleField.globalRadius);
 	}
 
 	@Override
@@ -50,7 +54,7 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 
 		//		System.out.println("FRAME_LAYOUT: " + MiscUtils.vertexLayoutToString(dataFrames.get(0), 3, 3));
 		speedLineBuffer = MiscUtils.frameLayoutToSpeedlineLayout(particleField.dataFrames, particleField.currentFrameIndex, particleField.speedLineLength + 1,
-				1, particleField.maxParticlesDisplayed, speedLineBuffer, startingIndicesList, numberOfverticesList);
+				1, particleField.maxParticlesDisplayed, speedLineBuffer, startingIndicesList, numberOfverticesList, jumpCompensation);
 		//		System.out.println("SLINE_LAYOUT: " + MiscUtils.vertexLayoutToString(speedLineBuffer, 3, 3) + "  speedLineLength:" + speedLineLength);
 		//		System.out.println("startingIndicesArray: " + startingIndicesList.toString());
 

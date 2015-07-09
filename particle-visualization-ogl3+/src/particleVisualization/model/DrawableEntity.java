@@ -42,11 +42,11 @@ public abstract class DrawableEntity extends Entity {
 		vertexArrayObject = new VertexArrayObject(positions, indices, texCoords, primitiveMode);
 	}
 
-	public DrawableEntity(Texture texture, float[] initialPositions, int verticesTargetCount, int primitiveMode, RenderMode renderMode) {
+	public DrawableEntity(Texture texture, float[] initialPositions, float[] initialColors, int verticesTargetCount, int primitiveMode, RenderMode renderMode) {
 		this.texture = texture;
 		this.renderMode = renderMode;
 		//		this.vertices = initialPositions;
-		vertexArrayObject = new VertexArrayObject(initialPositions, null, null, primitiveMode, verticesTargetCount);
+		vertexArrayObject = new VertexArrayObject(initialPositions, initialColors, primitiveMode, verticesTargetCount);
 	}
 
 	public DrawableEntity(RenderMode renderMode) {

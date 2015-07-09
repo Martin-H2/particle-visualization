@@ -9,9 +9,10 @@ uniform float spriteSize;
 
 in vec2 in_TextureCoord;
 in vec4 in_Position;
+in vec4 in_Color;
 
 out vec2 pass_TextureCoord;
-
+out vec4 pass_Color;
 
 void main(void) {
 
