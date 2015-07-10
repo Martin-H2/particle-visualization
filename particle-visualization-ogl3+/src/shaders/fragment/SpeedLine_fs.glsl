@@ -4,6 +4,7 @@ uniform sampler2D textureUnitId;
 uniform int renderMode;
 uniform vec4 globalColor;
 uniform vec4 bboxColor;
+uniform vec4 fogColor;
 
 in vec2 pass_TextureCoord;
 in vec3 normal;
@@ -23,7 +24,7 @@ void main(void) {
    
 	const float LOG2 = 1.442695;
 	const float fogDensity = 0.01;
-	vec4 fogColor = vec4(0.1, 0.1, 0.1, 1);
+	// fogColor = vec4(0.1, 0.1, 0.1, 1);
 	
 	
 	float z = gl_FragCoord.z / gl_FragCoord.w;

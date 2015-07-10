@@ -8,9 +8,10 @@ public enum ShaderLayout {
 
 	// ordering doesnt matter
 
-	in_Position, // 0
-	in_Color, // 1
-	in_TextureCoord; // 2
+	in_Position,
+	in_Color,
+	in_TextureCoord,
+	in_Offset;
 
 
 

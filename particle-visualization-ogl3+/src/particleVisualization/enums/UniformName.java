@@ -14,6 +14,7 @@ public enum UniformName {
 	//vec4f
 	globalColor,
 	bboxColor,
+	fogColor,
 
 	//vec2i
 	screenSize,

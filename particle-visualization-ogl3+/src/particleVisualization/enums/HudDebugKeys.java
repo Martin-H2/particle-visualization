@@ -11,7 +11,8 @@ public enum HudDebugKeys {
 	numTailSegments,
 	numObjects,
 	camPos,
-	camRot;
+	camRot,
+	filterKernel;
 
 
 

@@ -11,6 +11,7 @@ import particleVisualization.enums.RenderMode;
 import particleVisualization.enums.UniformName;
 import particleVisualization.model.DrawableEntity;
 import particleVisualization.util.ShaderUtils;
+import com.sun.javafx.geom.Vec4f;
 
 
 public class Shader {
@@ -47,6 +48,7 @@ public class Shader {
 		setRenderMode(RenderMode.textured);
 		setUniform2f(UniformName.screenSize, SimpleObjectViewer.windowWidth, SimpleObjectViewer.windowHeight);
 		setUniform4f(UniformName.globalColor, .3f, .3f, .6f, 1); //TODO cleanup
+		setUniform4f(UniformName.fogColor, Scene.BG_COLOR);
 		setUniform4f(UniformName.bboxColor, .7f, .7f, .7f, 1);
 		disable();
 	}
@@ -101,6 +103,10 @@ public class Shader {
 		if (perShaderUniformLocations.get(uniform) != null) {
 			glUniform4f(perShaderUniformLocations.get(uniform), f1, f2, f3, f4);
 		}
+	}
+
+	private void setUniform4f(UniformName uniform, Vec4f vec4) {
+		setUniform4f(uniform, vec4.x, vec4.y, vec4.z, vec4.w);
 	}
 
 	public void setRenderMode(RenderMode rm) {

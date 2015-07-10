@@ -7,9 +7,13 @@ import particleVisualization.control.InputManager;
 import particleVisualization.enums.HudDebugKeys;
 import particleVisualization.model.*;
 import particleVisualization.util.ScreenshotUtil;
+import com.sun.javafx.geom.Vec4f;
 
 
 public class Scene {
+
+	//public final static Vec4f	BG_COLOR	= new Vec4f(0.2f, 0.2f, 0.4f, 1.0f);
+	public final static Vec4f	BG_COLOR	= new Vec4f(0.99f, 0.99f, 0.99f, 1.0f);
 
 	public static Camera		camera;
 	private final InputManager	inputManager;
@@ -25,7 +29,7 @@ public class Scene {
 	private final DrawableEntity	particleFieldSpeedLines, groundQuad;
 	private DrawableEntity			exampleCube1, exampleCube2;
 
-	boolean							drawGroundOrientation	= true;
+	boolean							drawGroundOrientation	= false;
 
 
 
@@ -63,6 +67,7 @@ public class Scene {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		//		glBlendFunc(GL_ONE, GL_ONE);
+		glClearColor(BG_COLOR.x, BG_COLOR.y, BG_COLOR.z, BG_COLOR.w);
 	}
 
 
@@ -90,7 +95,7 @@ public class Scene {
 		HeadUpDisplay.putDebugValue(HudDebugKeys.fps, SimpleObjectViewer.getFpsAvg());
 		camera.update();
 		particleField.update();
-		//groundQuad.update();
+		particleFieldSpeedLines.update();
 	}
 
 

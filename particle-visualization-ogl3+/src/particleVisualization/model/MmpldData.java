@@ -17,8 +17,9 @@ import particleVisualization.enums.VertexDataType;
 
 public class MmpldData {
 
-	protected static final int		MAX_FRAMES_READ	= 600;
-	protected static final boolean	READ_PARALLEL	= true;
+	protected static int			maxFramesRead;
+	protected static final boolean	READ_PARALLEL		= true;
+	private static final int		MAX_BUFFERSIZE_MB	= 2000;
 	//private static final Logger log = Logger.getLogger( MmpldData.class.getName() );
 
 
@@ -181,8 +182,10 @@ public class MmpldData {
 		//System.out.println("particle count: " + pCount);
 
 		//byteBuffer.asFloatBuffer().get(particles);
-		final List<float[]> dataFrames = new ArrayList<float[]>(Math.min(numberOfDataFrames, MAX_FRAMES_READ));
-		final List<float[]> dataFramesColors = new ArrayList<float[]>(Math.min(numberOfDataFrames, MAX_FRAMES_READ));
+		maxFramesRead = (int) (MAX_BUFFERSIZE_MB / (fileInputChannel.size() / 1024d / 1024d / numberOfDataFrames));
+		System.out.println("limiting buffer to " + MAX_BUFFERSIZE_MB + "mb (" + maxFramesRead + " frames)");
+		final List<float[]> dataFrames = new ArrayList<float[]>(Math.min(numberOfDataFrames, maxFramesRead));
+		final List<float[]> dataFramesColors = new ArrayList<float[]>(Math.min(numberOfDataFrames, maxFramesRead));
 		addParticleFrames(byteBuffer, dataFrames, dataFramesColors, colorDataType, particlesPerFrame);
 
 
@@ -243,7 +246,7 @@ public class MmpldData {
 							}
 						}
 					}
-					if (i + 1 == MAX_FRAMES_READ) {
+					if (i + 1 == maxFramesRead) {
 						break;
 					}
 				}
@@ -265,12 +268,12 @@ public class MmpldData {
 			frameLoader.start();
 		}
 		else {
-			System.out.println("warning - parallel mode off, loading " + MAX_FRAMES_READ + " frames at once...");
+			System.out.println("warning - parallel mode off, loading " + maxFramesRead + " frames at once...");
 			frameLoader.run();
 		}
 
 		mmpldData = new MmpldData(boxMin, boxMax, dataFrames, dataFramesColors, globalRgba, globalRadius, particlesPerFrame,
-				Math.min(numberOfDataFrames, MAX_FRAMES_READ), mmpldFile.getName());
+				Math.min(numberOfDataFrames, maxFramesRead), mmpldFile.getName());
 
 		return mmpldData;
 	}

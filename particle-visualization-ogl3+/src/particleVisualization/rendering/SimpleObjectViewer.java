@@ -79,7 +79,6 @@ public class SimpleObjectViewer {
 			debugMessageCallback = MessageSystem.enableDebugging(context, System.err);
 		}
 		glViewport(0, 0, windowWidth, windowHeight);
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glEnable(GL_DEPTH_TEST);
 		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 		//		glEnable(GL_POLYGON_SMOOTH);
