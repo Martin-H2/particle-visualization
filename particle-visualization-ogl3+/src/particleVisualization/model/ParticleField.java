@@ -103,6 +103,12 @@ public class ParticleField extends DrawableEntity {
 			maxParticlesDisplayedF = maxParticlesDisplayedF * (1 - 2 * scaleStep) - 10 * scaleStep;
 			maxParticlesDisplayed = (int) maxParticlesDisplayedF;
 		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_N)) {
+			scaleClippedX(1 + scaleStep);
+		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_M)) {
+			scaleClippedX(1 - scaleStep);
+		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_E)) {
 			scaleClipped(1 + scaleStep);
 		}
@@ -166,6 +172,7 @@ public class ParticleField extends DrawableEntity {
 		HeadUpDisplay.putDebugValue(HudDebugKeys.numTailSegments, speedLineLength);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.numObjects, maxParticlesDisplayed * speedLineLength * (drawMiniPoints ? 2 : 1) + maxParticlesDisplayed);
 	}
+
 
 
 	public MmpldData getParticleData() {

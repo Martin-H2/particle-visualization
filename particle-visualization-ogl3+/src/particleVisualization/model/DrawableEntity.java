@@ -146,6 +146,11 @@ public abstract class DrawableEntity extends Entity {
 		needsMatrixUpdate = true;
 	}
 
+	public void scaleClippedX(float s) {
+		modelScale.x = MiscUtils.clip(modelScale.x * s, .0001f, 110f);
+		needsMatrixUpdate = true;
+	}
+
 	public void addScale(float s) {
 		addScaleClipped(s, s, s);
 	}
