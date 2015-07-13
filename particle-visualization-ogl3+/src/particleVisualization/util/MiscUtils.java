@@ -127,7 +127,7 @@ public class MiscUtils {
 					targetBuffer.put(x1).put(y1).put(z1);
 				}
 
-				lineStripOffsets.put(MiscUtils.clip(1f - (frameOffset + 2f) / frameCount * 1.3f, 0f, 1f));
+				lineStripOffsets.put(MiscUtils.clip(1f - (frameOffset + 0f) / frameCount * 0.8f, 0f, 1f));
 				verticesTotal++;
 				verticesPerLinestrip++;
 

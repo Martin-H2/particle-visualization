@@ -49,7 +49,7 @@ vec4 normalCrossSpriteScaled(vec4 v1, vec4 v2, float scale){
 	return scale * spriteSize * normalCross(v1, v2);
 }
 float getWidth(float offset) {
-	return 1 - offset * offset;
+	return 0.4;
 }
 
 void main(void) {
@@ -79,14 +79,14 @@ void main(void) {
 	// emitVertexWorldspace(pos0 + pos0ToCamVector);
     // EndPrimitive();
     
- 	color = vec4(offset[1], offset[1] , offset[1] , 1);
+ 	color = vec4(globalColor.x * offset[1], globalColor.y * offset[1] , globalColor.z * offset[1] , 1);
 	emitVertexCamspace(pos2 - normalCrossSpriteScaled(pos2ToCamVector, lineVector2, getWidth(offset[1])));
     
  	// color = vec4(0.6,0.3,0,1);
 	emitVertexCamspace(pos2 + normalCrossSpriteScaled(pos2ToCamVector, lineVector2, getWidth(offset[1])));
     
     
- 	color = vec4(offset[0], offset[0] , offset[0] , 1);
+ 	color = vec4(globalColor.x * offset[0], globalColor.y * offset[0] , globalColor.z * offset[0] , 1);
 	emitVertexCamspace(pos1 - normalCrossSpriteScaled(pos1ToCamVector, lineVector1, getWidth(offset[0])));
     
  	// color = vec4(0.6,0,0.3,1);

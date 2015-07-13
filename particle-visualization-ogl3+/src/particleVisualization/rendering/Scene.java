@@ -13,7 +13,8 @@ import com.sun.javafx.geom.Vec4f;
 public class Scene {
 
 	//public final static Vec4f	BG_COLOR	= new Vec4f(0.2f, 0.2f, 0.4f, 1.0f);
-	public final static Vec4f	BG_COLOR	= new Vec4f(0.99f, 0.99f, 0.99f, 1.0f);
+	//public final static Vec4f	BG_COLOR	= new Vec4f(0.99f, 0.99f, 0.99f, 1.0f);
+	public final static Vec4f	BG_COLOR	= new Vec4f(0.1f, 0.1f, 0.1f, 1.0f);
 
 	public static Camera		camera;
 	private final InputManager	inputManager;
