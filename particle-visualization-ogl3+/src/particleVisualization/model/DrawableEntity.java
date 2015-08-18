@@ -49,10 +49,10 @@ public abstract class DrawableEntity extends Entity {
 		vertexArrayObject = new VertexArrayObject(initialPositions, initialColors, primitiveMode, verticesTargetCount);
 	}
 
-	public DrawableEntity(RenderMode renderMode) {
+	public DrawableEntity(RenderMode renderMode, Texture texture) {
 		this.renderMode = renderMode;
 		vertexArrayObject = null;
-		texture = null;
+		this.texture = texture;
 	};
 
 
@@ -62,20 +62,22 @@ public abstract class DrawableEntity extends Entity {
 	 * e.g.: vertexArrayObject.draw();
 	 *
 	 * @param shader
+	 * @param countFraction
+	 * @param startFraction
 	 */
-	protected abstract void drawVao(Shader shader);
+	protected abstract void drawVao(Shader shader, float startFraction, float countFraction);
 
 
 
-	public final void draw(Shader shader) {
+	public final void draw(Shader shader, float startFraction, float countFraction) {
 		if (texture != null) {
 			texture.bind();
 		}
 		shader.setModelMatrix(getUpdatedModelMatrix());
 		shader.setRenderMode(renderMode);
 		setPerDrawUniforms(shader);
-		drawVao(shader);
-		if (drawBoundingBox) {
+		drawVao(shader, startFraction, countFraction);
+		if (drawBoundingBox && startFraction == 0f) {
 			shader.setRenderMode(RenderMode.boundingBox);
 			glDisable(GL_CULL_FACE);
 			GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE);
@@ -133,21 +135,21 @@ public abstract class DrawableEntity extends Entity {
 
 
 	public void addScaleClipped(float x, float y, float z) {
-		modelScale.x = MiscUtils.clip(modelScale.x + x, .0001f, 110f);
-		modelScale.y = MiscUtils.clip(modelScale.y + y, .0001f, 110f);
-		modelScale.z = MiscUtils.clip(modelScale.z + z, .0001f, 110f);
+		modelScale.x = MiscUtils.clamp(modelScale.x + x, .0001f, 110f);
+		modelScale.y = MiscUtils.clamp(modelScale.y + y, .0001f, 110f);
+		modelScale.z = MiscUtils.clamp(modelScale.z + z, .0001f, 110f);
 		needsMatrixUpdate = true;
 	}
 
 	public void scaleClipped(float s) {
-		modelScale.x = MiscUtils.clip(modelScale.x * s, .0001f, 110f);
-		modelScale.y = MiscUtils.clip(modelScale.y * s, .0001f, 110f);
-		modelScale.z = MiscUtils.clip(modelScale.z * s, .0001f, 110f);
+		modelScale.x = MiscUtils.clamp(modelScale.x * s, .0001f, 110f);
+		modelScale.y = MiscUtils.clamp(modelScale.y * s, .0001f, 110f);
+		modelScale.z = MiscUtils.clamp(modelScale.z * s, .0001f, 110f);
 		needsMatrixUpdate = true;
 	}
 
 	public void scaleClippedX(float s) {
-		modelScale.x = MiscUtils.clip(modelScale.x * s, .0001f, 110f);
+		modelScale.x = MiscUtils.clamp(modelScale.x * s, .0001f, 110f);
 		needsMatrixUpdate = true;
 	}
 
@@ -217,5 +219,7 @@ public abstract class DrawableEntity extends Entity {
 		modelMatrixLinked = true;
 		this.modelMatrix = modelMatrix;
 	}
+
+
 
 }

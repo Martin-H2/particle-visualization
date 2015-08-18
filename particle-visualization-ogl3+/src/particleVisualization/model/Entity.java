@@ -58,7 +58,7 @@ public abstract class Entity {
 	}
 
 	public void addPitchClipped(float pitchDelta, float maxPitch) {
-		setPitch(MiscUtils.clip(getPitch() + pitchDelta, -maxPitch, maxPitch));
+		setPitch(MiscUtils.clamp(getPitch() + pitchDelta, -maxPitch, maxPitch));
 	}
 
 	public void addPitch(float pitchDelta) {

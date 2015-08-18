@@ -7,11 +7,11 @@ import java.nio.FloatBuffer;
 import java.util.EnumMap;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector4f;
 import particleVisualization.enums.RenderMode;
 import particleVisualization.enums.UniformName;
 import particleVisualization.model.DrawableEntity;
 import particleVisualization.util.ShaderUtils;
-import com.sun.javafx.geom.Vec4f;
 
 
 public class Shader {
@@ -47,8 +47,9 @@ public class Shader {
 		setTextureUnitId(textureUnitId);
 		setRenderMode(RenderMode.textured);
 		setUniform2f(UniformName.screenSize, SimpleObjectViewer.windowWidth, SimpleObjectViewer.windowHeight);
-		setUniform4f(UniformName.globalColor, .3f, .3f, .6f, 1); //TODO cleanup
+		setUniform4f(UniformName.globalColor, .4f, .4f, .8f, 1); //TODO cleanup
 		setUniform4f(UniformName.fogColor, Scene.BG_COLOR);
+		setUniform1f(UniformName.fogDensity, Scene.FOG_DENSITY);
 		setUniform4f(UniformName.bboxColor, .7f, .7f, .7f, 1);
 		disable();
 	}
@@ -57,11 +58,20 @@ public class Shader {
 		enable();
 		setViewMatrix(updatedViewMatrix);
 		for (DrawableEntity de: drawableEntities) {
-			de.draw(this);
+			de.draw(this, 0f, 1f);
 		}
 		disable();
 	}
 
+
+	public final void drawZSlice(Matrix4f updatedViewMatrix, float startFraction, float countFraction, DrawableEntity... drawableEntities) {
+		enable();
+		setViewMatrix(updatedViewMatrix);
+		for (DrawableEntity de: drawableEntities) {
+			de.draw(this, startFraction, countFraction);
+		}
+		disable();
+	}
 
 
 	public void setProjectionMatrix(Matrix4f projectionMatrix) {
@@ -105,7 +115,7 @@ public class Shader {
 		}
 	}
 
-	private void setUniform4f(UniformName uniform, Vec4f vec4) {
+	public void setUniform4f(UniformName uniform, Vector4f vec4) {
 		setUniform4f(uniform, vec4.x, vec4.y, vec4.z, vec4.w);
 	}
 

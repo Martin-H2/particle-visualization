@@ -21,6 +21,10 @@ public enum UniformName {
 
 	//float
 	spriteSize,
+	fogDensity,
+	speedlineTransparency,
+	textureFact,
+
 
 	//int
 	renderMode,

@@ -13,6 +13,7 @@ in vec4 in_Color;
 
 out vec2 pass_TextureCoord;
 out vec4 pass_Color;
+flat out float pass_PointSize;
 
 
 void main(void) {
@@ -26,6 +27,7 @@ void main(void) {
 	    vec4 projVoxel = projectionMatrix * vec4(spriteSize,spriteSize,eyePos.z,eyePos.w);
 	    vec2 projSize = screenSize * projVoxel.xy / projVoxel.w;
 	    gl_PointSize = 0.25 * (projSize.x+projSize.y);
+	    pass_PointSize = abs(eyePos.z);
 	}
     
     gl_Position = projectionMatrix * eyePos;

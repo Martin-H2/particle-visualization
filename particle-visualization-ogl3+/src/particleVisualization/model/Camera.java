@@ -87,6 +87,9 @@ public class Camera extends Entity {
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_F3)) {
 			setScreenShotPos();
 		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_F4)) {
+			setTrailZoomPos();
+		}
 
 
 		if (InputManager.isLockedOnRightMouse()) {
@@ -113,6 +116,13 @@ public class Camera extends Entity {
 		setYaw(0);
 		setRoll(0);
 		setPosition(0, 0, -2);
+	}
+
+	public void setTrailZoomPos() {
+		setPitch(-6);
+		setYaw(-5);
+		setRoll(0);
+		setPosition(0, 0, -0.6f);
 	}
 
 

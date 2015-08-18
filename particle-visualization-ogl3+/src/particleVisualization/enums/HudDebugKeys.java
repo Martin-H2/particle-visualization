@@ -12,7 +12,9 @@ public enum HudDebugKeys {
 	numObjects,
 	camPos,
 	camRot,
-	filterKernel;
+	filterKernel,
+	speedlineTransparency,
+	textureFact;
 
 
 
@@ -20,6 +22,8 @@ public enum HudDebugKeys {
 	public String toString() {
 		switch (this) {
 
+		case speedlineTransparency:
+			return "transparency";
 		case dataFrameCount:
 			return "dataFrames";
 		case numObjects:

@@ -3,14 +3,11 @@ package particleVisualization.util;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.List;
-import java.util.Random;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.util.vector.Vector3f;
 
 public class MiscUtils {
 
-	private static Random	random	= new Random();
 
 
 	public static float degreesToRadians(final float degrees) {
@@ -21,7 +18,7 @@ public class MiscUtils {
 		return (float) (1f / Math.tan(angle));
 	}
 
-	public static float clip(float value, float lowerBound, float upperBound) {
+	public static float clamp(float value, float lowerBound, float upperBound) {
 		if (upperBound < lowerBound) {
 			upperBound = lowerBound;
 		}
@@ -29,7 +26,7 @@ public class MiscUtils {
 
 	}
 
-	public static int clip(int value, int lowerBound, int upperBound) {
+	public static int clamp(int value, int lowerBound, int upperBound) {
 		if (upperBound < lowerBound) {
 			upperBound = lowerBound;
 		}
@@ -76,107 +73,6 @@ public class MiscUtils {
 	}
 
 
-	// [xyz xyz xyz ...] partikel
-	// [xyz xyz xyz ...] partikel
-	// [xyz xyz xyz ...] partikel
-	// [xyz xyz xyz ...] partikel
-
-	public static FloatBuffer frameLayoutToSpeedlineLayout(List<float[]> dataFrames, int startingFrame, int frameCount, int skippedFrames, int particleCap,
-			FloatBuffer targetBuffer, FloatBuffer lineStripOffsets, IntBuffer startingIndicesList, IntBuffer numberOfVerticesList, boolean jumpCompensation, float filterKernel) {
-		int particlesPerFrame = dataFrames.get(startingFrame).length / 3;
-		if (particleCap > 0) {
-			particlesPerFrame = Math.min(particlesPerFrame, particleCap);
-		}
-		int floatCount = dataFrames.get(startingFrame).length * frameCount;
-
-		if (targetBuffer == null || targetBuffer.capacity() != floatCount) {
-			targetBuffer = BufferUtils.createFloatBuffer(floatCount);
-		}
-		else {
-			targetBuffer.clear();
-		}
-		startingIndicesList.clear();
-		numberOfVerticesList.clear();
-		lineStripOffsets.clear();
-
-		int verticesTotal = 0;
-		int verticesPerLinestrip = 0;
-		int extraLineStripSpace = startingIndicesList.capacity() - particlesPerFrame;
-
-		for (int particleIndex = 0; particleIndex < particlesPerFrame; particleIndex++) {
-			startingIndicesList.put(verticesTotal);
-			for (int frameOffset = 0; frameOffset < frameCount; frameOffset++) {
-				float x1 = getX(dataFrames, startingFrame - frameOffset, particleIndex);
-				float y1 = getY(dataFrames, startingFrame - frameOffset, particleIndex);
-				float z1 = getZ(dataFrames, startingFrame - frameOffset, particleIndex);
-
-				if (particleIndex >= 1 && particleIndex <= particlesPerFrame - 2 && startingFrame - frameOffset > 0) {
-					targetBuffer.put(x1);
-					targetBuffer.put(binomialFilter(
-							getY(dataFrames, startingFrame - frameOffset - 1, particleIndex),
-							y1,
-							getY(dataFrames, startingFrame - frameOffset + 1, particleIndex),
-							filterKernel));
-					targetBuffer.put(binomialFilter(
-							getZ(dataFrames, startingFrame - frameOffset - 1, particleIndex),
-							z1,
-							getZ(dataFrames, startingFrame - frameOffset + 1, particleIndex),
-							filterKernel));
-				}
-				else {
-					targetBuffer.put(x1).put(y1).put(z1);
-				}
-
-				lineStripOffsets.put(MiscUtils.clip(1f - (frameOffset + 0f) / frameCount * 0.8f, 0f, 1f));
-				verticesTotal++;
-				verticesPerLinestrip++;
-
-				//new linestrip check...
-				if (startingFrame - frameOffset <= 0) {
-					break;
-				}
-
-				if (jumpCompensation) {
-					float x2 = getX(dataFrames, startingFrame - frameOffset - 1, particleIndex);
-					float y2 = getY(dataFrames, startingFrame - frameOffset - 1, particleIndex);
-					float z2 = getZ(dataFrames, startingFrame - frameOffset - 1, particleIndex);
-					if (x2 > x1 || Math.abs(y2 - y1) > 0.3f || Math.abs(z2 - z1) > 0.3f) {
-						//line wrap...
-						if (extraLineStripSpace > 0) {
-							numberOfVerticesList.put(verticesPerLinestrip);
-							verticesPerLinestrip = 0;
-							startingIndicesList.put(verticesTotal);
-							extraLineStripSpace--;
-						}
-						else {
-							break;
-						}
-					}
-				}
-
-			}
-			numberOfVerticesList.put(verticesPerLinestrip);
-			verticesPerLinestrip = 0;
-		}
-
-		startingIndicesList.flip();
-		numberOfVerticesList.flip();
-		lineStripOffsets.flip();
-		targetBuffer.flip();
-		return targetBuffer;
-	}
-
-	private static float getX(List<float[]> dataFrames, int frameIndex, int particleIndex) {
-		return dataFrames.get(frameIndex)[3 * particleIndex];
-	}
-
-	private static float getY(List<float[]> dataFrames, int frameIndex, int particleIndex) {
-		return dataFrames.get(frameIndex)[3 * particleIndex + 1];
-	}
-
-	private static float getZ(List<float[]> dataFrames, int frameIndex, int particleIndex) {
-		return dataFrames.get(frameIndex)[3 * particleIndex + 2];
-	}
 
 	/**
 	 * 3rd degree centered binomial filter
@@ -191,7 +87,7 @@ public class MiscUtils {
 	 *            - 0 ... no filtering, 1 ... max filtering
 	 * @return the filtred value
 	 */
-	private static float binomialFilter(float prevValue, float value, float nextValue, float filterKernel) {
+	static float binomialFilter(float prevValue, float value, float nextValue, float filterKernel) {
 		return filterKernel / 2f * prevValue + (1 - filterKernel) * value + filterKernel / 2f * nextValue;
 	}
 
@@ -221,4 +117,6 @@ public class MiscUtils {
 		fb.get(a);
 		return vertexLayoutToString(a, floatsPerVertex, vertexCap);
 	}
+
+
 }
