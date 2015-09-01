@@ -24,7 +24,7 @@ public enum UniformName {
 	fogDensity,
 	speedlineTransparency,
 	textureFact,
-
+	textureYScale,
 
 	//int
 	renderMode,

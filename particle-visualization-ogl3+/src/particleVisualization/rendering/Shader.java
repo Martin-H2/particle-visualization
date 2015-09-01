@@ -50,7 +50,7 @@ public class Shader {
 		setUniform4f(UniformName.globalColor, .4f, .4f, .8f, 1); //TODO cleanup
 		setUniform4f(UniformName.fogColor, Scene.BG_COLOR);
 		setUniform1f(UniformName.fogDensity, Scene.FOG_DENSITY);
-		setUniform4f(UniformName.bboxColor, .7f, .7f, .7f, 1);
+		setUniform4f(UniformName.bboxColor, .7f, .65f, .5f, .9f);
 		disable();
 	}
 

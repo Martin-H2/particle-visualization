@@ -13,7 +13,7 @@ import particleVisualization.util.ScreenshotUtil;
 
 public class Scene {
 
-	private static final float		NUMBER_OF_RENDER_SLICES	= 10;
+	private static final float		NUMBER_OF_RENDER_SLICES	= 2;
 	//public final static Vector4f	BG_COLOR	= new Vector4f(0.2f, 0.2f, 0.4f, 1.0f);
 	public final static Vector4f	BG_COLOR				= new Vector4f(0.99f, 0.99f, 0.99f, 1.0f);
 	//public final static Vector4f	BG_COLOR				= new Vector4f(0.1f, 0.1f, 0.1f, 1.0f);
@@ -49,7 +49,7 @@ public class Scene {
 
 		trailTex = new Texture("speedlines.png");
 		gridTex = new Texture("gray_grid_dark.jpg");
-		particleTex = new Texture("MegamolBubble.png");
+		particleTex = new Texture("blenderSphere.png");
 
 		hud = new HeadUpDisplay(windowWidth, windowHeight);
 

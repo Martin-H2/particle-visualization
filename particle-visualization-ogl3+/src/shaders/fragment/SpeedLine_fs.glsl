@@ -8,6 +8,7 @@ uniform vec4 fogColor;
 uniform float fogDensity;
 uniform float speedlineTransparency;
 uniform float textureFact;
+uniform float textureYScale;
 
 in vec2 textureCoord;
 in vec3 normal;
@@ -36,7 +37,7 @@ void main(void) {
 	
 	out_Color = mix(out_Color, fogColor, pass_offset);
 	out_Color = mix(out_Color, fogColor, 0.94 - borderGradFact);
-	out_Color = mix(out_Color, texture(textureUnitId, vec2(1 - pass_offset, textureCoord.y )), textureFact);
+	out_Color = mix(out_Color, texture(textureUnitId, vec2(1 - pass_offset, textureCoord.y * textureYScale )), textureFact);
 
 
 	out_Color.w = out_Color.w * borderGradFact * (1 - pass_offset) + (1 - speedlineTransparency);

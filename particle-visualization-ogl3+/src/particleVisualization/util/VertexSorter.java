@@ -37,6 +37,21 @@ public class VertexSorter {
 					.put(getZ(dataFrames, currentFrameIndex, sortingIndices[i]));
 		}
 
+		targetBuffer.flip();
+		return targetBuffer;
+	}
+
+	public static FloatBuffer fillParticleColorBuffer(List<float[]> dataFramesColors, int currentFrameIndex, int maxParticlesDisplayed, FloatBuffer targetBuffer) {
+		if (targetBuffer == null || targetBuffer.capacity() != maxParticlesDisplayed) {
+			targetBuffer = BufferUtils.createFloatBuffer(maxParticlesDisplayed);
+		}
+		else {
+			targetBuffer.clear();
+		}
+
+		for (int i = 0; i < maxParticlesDisplayed; i++) {
+			targetBuffer.put(dataFramesColors.get(currentFrameIndex)[sortingIndices[i]]);
+		}
 
 		targetBuffer.flip();
 		return targetBuffer;
@@ -60,8 +75,8 @@ public class VertexSorter {
 		int floatCount = dataFrames.get(startingFrame).length * frameCount;
 
 
-		if (targetBuffer == null || targetBuffer.capacity() != floatCount) {
-			targetBuffer = BufferUtils.createFloatBuffer(floatCount);
+		if (targetBuffer == null || targetBuffer.capacity() < floatCount) {
+			targetBuffer = BufferUtils.createFloatBuffer(floatCount + dataFrames.get(startingFrame).length * 5);
 		}
 		else {
 			targetBuffer.clear();
@@ -175,6 +190,8 @@ public class VertexSorter {
 		}
 
 		Vector4f temp = new Vector4f();
+
+		//		System.out.println("numberOfVertices: " + numberOfVertices + ", vertexArray3f.length: " + vertexArray3f.length);
 
 		for (int i = 0; i < numberOfVertices; i++) {
 			Matrix4f.transform(modelViewMatrix, new Vector4f(vertexArray3f[3 * i], vertexArray3f[3 * i + 1], vertexArray3f[3 * i + 2], 1), temp);

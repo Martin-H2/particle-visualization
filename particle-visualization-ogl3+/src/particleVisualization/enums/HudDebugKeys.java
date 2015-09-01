@@ -14,7 +14,8 @@ public enum HudDebugKeys {
 	camRot,
 	filterKernel,
 	speedlineTransparency,
-	textureFact;
+	textureFact,
+	textureYScale;
 
 
 
@@ -27,7 +28,7 @@ public enum HudDebugKeys {
 		case dataFrameCount:
 			return "dataFrames";
 		case numObjects:
-			return "objects";
+			return "tris";
 		case numTailSegments:
 			return "tailSegments";
 		case particleCount:

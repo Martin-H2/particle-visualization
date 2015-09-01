@@ -34,6 +34,7 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 	private final float			filterKernel			= 0.5f;
 	private float				speedlineTransparency	= 0.3f;
 	private float				textureFact				= 0.5f;
+	private float				textureYScale			= 1.0f;
 
 	public ParticleFieldSpeedLines(ParticleField particleField, Texture texture) {
 		super(RenderMode.globalColored, texture);
@@ -45,6 +46,12 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 
 	@Override
 	public void update() {
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_3) && InputManager.isKeyDownEvent(GLFW.GLFW_KEY_PAGE_UP)) {
+			textureYScale = MiscUtils.clamp(textureYScale + 0.1f, 0.1f, 3.0f);
+		}
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_3) && InputManager.isKeyDownEvent(GLFW.GLFW_KEY_PAGE_DOWN)) {
+			textureYScale = MiscUtils.clamp(textureYScale - 0.1f, 0.1f, 3.0f);
+		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_2) && InputManager.isKeyDownEvent(GLFW.GLFW_KEY_PAGE_UP)) {
 			speedlineTransparency = MiscUtils.clamp(speedlineTransparency + 0.1f, 0, 1);
 		}
@@ -59,6 +66,7 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 		}
 		HeadUpDisplay.putDebugValue(HudDebugKeys.speedlineTransparency, speedlineTransparency);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.textureFact, textureFact);
+		HeadUpDisplay.putDebugValue(HudDebugKeys.textureYScale, textureYScale);
 
 		int offsetCount = particleField.particlesPerFrame * (particleField.speedLineLength + 1) + particleField.particlesPerFrame;
 		//		System.out.println("FRAME_LAYOUT: " + MiscUtils.vertexLayoutToString(dataFrames.get(0), 3, 3));
@@ -79,6 +87,7 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 		shader.setUniform1f(UniformName.fogDensity, Scene.FOG_DENSITY);
 		shader.setUniform1f(UniformName.speedlineTransparency, speedlineTransparency);
 		shader.setUniform1f(UniformName.textureFact, textureFact);
+		shader.setUniform1f(UniformName.textureYScale, textureYScale);
 	}
 
 	@Override

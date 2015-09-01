@@ -57,7 +57,7 @@ public class HeadUpDisplay {
 		Font f = new Font("Arial", Font.PLAIN, 12);
 		unicodeFont = new UnicodeFont(f);
 		unicodeFont.addAsciiGlyphs();
-		unicodeFont.getEffects().add(new ColorEffect(java.awt.Color.LIGHT_GRAY));
+		unicodeFont.getEffects().add(new ColorEffect(java.awt.Color.GRAY));
 		try {
 			unicodeFont.loadGlyphs();
 		}
@@ -100,7 +100,7 @@ public class HeadUpDisplay {
 		glLoadIdentity();
 
 		glBegin(GL_QUADS);
-		glColor4f(0.1f, 0.1f, 0.1f, 0.5f);
+		glColor4f(0.5f, 0.5f, 0.5f, 0.1f);
 		glVertex2f(overlayLeftMargin, 0);
 		glVertex2f(overlayLeftMargin, hudDebugValues.size() * lineHeight + 10);
 		glVertex2f(wWidth, hudDebugValues.size() * lineHeight + 10);
@@ -115,7 +115,7 @@ public class HeadUpDisplay {
 
 		y = wHeight - (keyHelp.size() * lineHeight + 15);
 		glBegin(GL_QUADS);
-		glColor4f(0.1f, 0.1f, 0.1f, 0.5f);
+		glColor4f(0.5f, 0.5f, 0.5f, 0.1f);
 		glVertex2f(overlayLeftMargin, y);
 		glVertex2f(overlayLeftMargin, wHeight);
 		glVertex2f(wWidth, wHeight);

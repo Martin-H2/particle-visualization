@@ -10,6 +10,7 @@ import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import java.nio.FloatBuffer;
 import java.util.List;
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL32;
 import org.lwjgl.util.vector.Matrix4f;
@@ -26,6 +27,7 @@ import particleVisualization.util.VertexSorter;
 public class ParticleField extends DrawableEntity {
 
 	private FloatBuffer			particleBuffer;
+	private FloatBuffer			particleColorBuffer;
 
 
 	public final List<float[]>	dataFrames;
@@ -55,8 +57,8 @@ public class ParticleField extends DrawableEntity {
 
 
 	public ParticleField(MmpldData particleData, Texture spriteTexture) {
-		super(spriteTexture, particleData.getDataFrames().get(0),
-				particleData.isColorDataSet() ? particleData.getDataFramesColors().get(0) : null,
+		super(spriteTexture, particleData.getDataFrames().get(0), // FIXME OPTIMIZE - other const !
+		particleData.isColorDataSet() ? particleData.getDataFramesColors().get(0) : null,
 				particleData.getNumberOfDataFrames() * particleData.getParticlesPerFrame(), GL_POINTS,
 				particleData.isColorDataSet() ? RenderMode.texturedAndColored : RenderMode.textured);
 		uploadedFrames = 1;
@@ -97,10 +99,18 @@ public class ParticleField extends DrawableEntity {
 		glEnableVertexAttribArray(ShaderLayout.in_Position.ordinal());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+		int colorVboId = glGenBuffers();
+		glBindBuffer(GL_ARRAY_BUFFER, colorVboId);
+		glBufferData(GL_ARRAY_BUFFER, particleColorBuffer, GL_STREAM_DRAW);
+		glVertexAttribPointer(ShaderLayout.in_Color.ordinal(), 4, GL11.GL_UNSIGNED_BYTE, true, 0, 0);
+		glEnableVertexAttribArray(ShaderLayout.in_Color.ordinal());
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 		int start = (int) (maxParticlesDisplayed * startFraction);
 		glDrawArrays(GL_POINTS, start, (int) (maxParticlesDisplayed * countFraction) - start);
 
 		glDeleteBuffers(vboId);
+		glDeleteBuffers(colorVboId);
 
 
 	}
@@ -205,6 +215,7 @@ public class ParticleField extends DrawableEntity {
 		Matrix4f.mul(viewMatrix, getUpdatedModelMatrix(), modelViewMatrix);
 		VertexSorter.generateSortingIndices(dataFrames.get(currentFrameIndex), maxParticlesDisplayed, modelViewMatrix);
 		particleBuffer = VertexSorter.fillParticleBuffer(dataFrames, currentFrameIndex, maxParticlesDisplayed, particleBuffer);
+		particleColorBuffer = VertexSorter.fillParticleColorBuffer(dataFramesColors, currentFrameIndex, maxParticlesDisplayed, particleColorBuffer);
 
 
 		// HUD
@@ -212,7 +223,7 @@ public class ParticleField extends DrawableEntity {
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrame, currentFrameIndex);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrameCount, dataFrames.size());
 		HeadUpDisplay.putDebugValue(HudDebugKeys.numTailSegments, speedLineLength);
-		HeadUpDisplay.putDebugValue(HudDebugKeys.numObjects, maxParticlesDisplayed * speedLineLength * 2 + maxParticlesDisplayed);
+		HeadUpDisplay.putDebugValue(HudDebugKeys.numObjects, maxParticlesDisplayed * speedLineLength * 2 + maxParticlesDisplayed * 2);
 	}
 
 
