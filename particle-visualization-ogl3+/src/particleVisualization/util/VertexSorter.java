@@ -76,7 +76,7 @@ public class VertexSorter {
 
 
 		if (targetBuffer == null || targetBuffer.capacity() < floatCount) {
-			targetBuffer = BufferUtils.createFloatBuffer(floatCount + dataFrames.get(startingFrame).length * 5);
+			targetBuffer = BufferUtils.createFloatBuffer(floatCount * 2 + dataFrames.get(startingFrame).length * 10);
 		}
 		else {
 			targetBuffer.clear();
