@@ -54,7 +54,12 @@ public class MiscUtils {
 	}
 
 	public static String formatVec3(Vector3f v) {
-		return "(" + Math.round(v.x) + "," + Math.round(v.y) + "," + Math.round(v.z) + ")";
+		return "(" + round(v.x, 2) + "," + round(v.y, 2) + "," + round(v.z, 2) + ")";
+	}
+
+	public static double round(float value, int digits) {
+		double fact = Math.pow(10, digits);
+		return Math.round(value * fact) / fact;
 	}
 
 	public static float[] cornerVectorsToQuadstrip(Vector3f boxMin, Vector3f boxMax) {

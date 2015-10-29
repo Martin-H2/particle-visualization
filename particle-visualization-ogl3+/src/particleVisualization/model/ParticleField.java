@@ -32,27 +32,30 @@ public class ParticleField extends DrawableEntity {
 
 	public final List<float[]>	dataFrames;
 	private final List<float[]>	dataFramesColors;
-	public int					currentFrameIndex	= 0;
-	private double				currentFrameIndexD	= 0;
+	public int					currentFrameIndex		= 0;
+	private double				currentFrameIndexD		= 0;
 
 	//private final Vector4f		globalRgba;
 	public int					maxParticlesDisplayed;
 	private float				maxParticlesDisplayedF;
 	public final int			particlesPerFrame;
-	private boolean				paused				= true;
-	private float				dataFps				= SimpleObjectViewer.refreshRate;
+	private boolean				paused					= true;
+	private float				dataFps					= SimpleObjectViewer.refreshRate;
 	private int					uploadedFrames;
-	private boolean				drawMiniPoints		= false;
-	public int					speedLineLength		= 0;
-	private float				speedLineLengthF	= 0;
+	private boolean				drawMiniPoints			= false;
+	public int					speedLineLength			= 0;
+	private float				speedLineLengthF		= 0;
 
-	private final float			mouseSensitivity	= 0.15f;
+	private final float			mouseSensitivity		= 0.15f;
 	public float				globalRadius;
 	public final MmpldData		particleData;
 	private Vector3f			jumpThresholds;
 
 
-	private final Matrix4f		modelViewMatrix		= new Matrix4f();
+	private final Matrix4f		modelViewMatrix			= new Matrix4f();
+	private int					vboId;
+	private int					colorVboId;
+	private int					numTriangleLastFrame	= 0;
 
 
 
@@ -92,14 +95,15 @@ public class ParticleField extends DrawableEntity {
 		//vertexArrayObject.draw(currentFrameIndex * particlesPerFrame, maxParticlesDisplayed, true);
 		//			shader.setUniform1f(UniformName.spriteSize, 0.04f);
 
-		int vboId = glGenBuffers();
+		//if (!Scene.idle)
+		vboId = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
 		glBufferData(GL_ARRAY_BUFFER, particleBuffer, GL_STREAM_DRAW);
 		glVertexAttribPointer(ShaderLayout.in_Position.ordinal(), 3, GL_FLOAT, false, 0, 0);
 		glEnableVertexAttribArray(ShaderLayout.in_Position.ordinal());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		int colorVboId = glGenBuffers();
+		colorVboId = glGenBuffers();
 		glBindBuffer(GL_ARRAY_BUFFER, colorVboId);
 		glBufferData(GL_ARRAY_BUFFER, particleColorBuffer, GL_STREAM_DRAW);
 		glVertexAttribPointer(ShaderLayout.in_Color.ordinal(), 4, GL11.GL_UNSIGNED_BYTE, true, 0, 0);
@@ -141,7 +145,7 @@ public class ParticleField extends DrawableEntity {
 		float scaleStep = SimpleObjectViewer.getFrameTimeMs() / 1000.0f;
 
 
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_KP_ADD)) {
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_KP_ADD) && numTriangleLastFrame < 10000000) {
 			maxParticlesDisplayedF = maxParticlesDisplayedF * (1 + 2 * scaleStep) + 10 * scaleStep;
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_KP_SUBTRACT)) {
@@ -159,7 +163,7 @@ public class ParticleField extends DrawableEntity {
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_Q)) {
 			scaleClipped(1 - scaleStep);
 		}
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_F)) {
+		if (InputManager.isKeyDown(GLFW.GLFW_KEY_F) && numTriangleLastFrame < 10000000 && speedLineLength < 300) {
 			speedLineLengthF = speedLineLengthF * (1 + scaleStep) + 10 * scaleStep;
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_C)) {
@@ -219,11 +223,12 @@ public class ParticleField extends DrawableEntity {
 
 
 		// HUD
+		numTriangleLastFrame = maxParticlesDisplayed * speedLineLength * 2 + maxParticlesDisplayed * 2;
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFps, paused ? 0 : dataFps);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrame, currentFrameIndex);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrameCount, dataFrames.size());
 		HeadUpDisplay.putDebugValue(HudDebugKeys.numTailSegments, speedLineLength);
-		HeadUpDisplay.putDebugValue(HudDebugKeys.numObjects, maxParticlesDisplayed * speedLineLength * 2 + maxParticlesDisplayed * 2);
+		HeadUpDisplay.putDebugValue(HudDebugKeys.numObjects, numTriangleLastFrame);
 	}
 
 
@@ -242,6 +247,10 @@ public class ParticleField extends DrawableEntity {
 
 	@Override
 	public void update() {
+	}
+
+	public boolean isPaused() {
+		return paused;
 	}
 
 }

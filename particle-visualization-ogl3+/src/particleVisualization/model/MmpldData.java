@@ -273,7 +273,6 @@ public class MmpldData {
 				System.out.println("vertex data type: " + vertexDataType);
 				System.out.println("color data type: " + colorDataType);
 				System.out.println("global radius: " + globalRadius);
-				System.out.println("particleListRgbaPacked: " + particleListRgbaPacked);
 				System.out.println("particlesPerFrame: " + particlesPerList);
 			}
 

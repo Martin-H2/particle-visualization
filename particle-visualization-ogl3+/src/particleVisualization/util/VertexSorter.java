@@ -23,8 +23,9 @@ public class VertexSorter {
 
 	public static FloatBuffer fillParticleBuffer(List<float[]> dataFrames, int currentFrameIndex, int maxParticlesDisplayed, FloatBuffer targetBuffer) {
 		int floatCount = maxParticlesDisplayed * 3;
-		if (targetBuffer == null || targetBuffer.capacity() != floatCount) {
+		if (targetBuffer == null || targetBuffer.capacity() < floatCount) {
 			targetBuffer = BufferUtils.createFloatBuffer(floatCount);
+			System.out.println("#fillParticleBuffer.createFloatBuffer !");
 		}
 		else {
 			targetBuffer.clear();
@@ -42,8 +43,9 @@ public class VertexSorter {
 	}
 
 	public static FloatBuffer fillParticleColorBuffer(List<float[]> dataFramesColors, int currentFrameIndex, int maxParticlesDisplayed, FloatBuffer targetBuffer) {
-		if (targetBuffer == null || targetBuffer.capacity() != maxParticlesDisplayed) {
+		if (targetBuffer == null || targetBuffer.capacity() < maxParticlesDisplayed) {
 			targetBuffer = BufferUtils.createFloatBuffer(maxParticlesDisplayed);
+			System.out.println("#fillParticleColorBuffer.createFloatBuffer !");
 		}
 		else {
 			targetBuffer.clear();
@@ -77,6 +79,7 @@ public class VertexSorter {
 
 		if (targetBuffer == null || targetBuffer.capacity() < floatCount) {
 			targetBuffer = BufferUtils.createFloatBuffer(floatCount * 2 + dataFrames.get(startingFrame).length * 10);
+			System.out.println("#frameLayoutToSpeedlineLayout.createFloatBuffer !");
 		}
 		else {
 			targetBuffer.clear();

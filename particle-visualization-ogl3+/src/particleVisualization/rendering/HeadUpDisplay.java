@@ -51,7 +51,7 @@ public class HeadUpDisplay {
 
 		wWidth = windowWidth;
 		wHeight = windowHeight;
-		overlayLeftMargin = wWidth - 110;
+		overlayLeftMargin = wWidth - 150;
 
 		//unicode font
 		Font f = new Font("Arial", Font.PLAIN, 12);

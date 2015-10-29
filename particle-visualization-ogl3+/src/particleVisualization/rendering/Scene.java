@@ -13,9 +13,10 @@ import particleVisualization.util.ScreenshotUtil;
 
 public class Scene {
 
-	private static final float		NUMBER_OF_RENDER_SLICES	= 2;
+	private static final float		NUMBER_OF_RENDER_SLICES	= 1;
 	//public final static Vector4f	BG_COLOR	= new Vector4f(0.2f, 0.2f, 0.4f, 1.0f);
 	public final static Vector4f	BG_COLOR				= new Vector4f(0.99f, 0.99f, 0.99f, 1.0f);
+	private static final float		motionBlurStrength		= 0.7f;
 	//public final static Vector4f	BG_COLOR				= new Vector4f(0.1f, 0.1f, 0.1f, 1.0f);
 	public static float				FOG_DENSITY				= 1f;
 
@@ -36,6 +37,7 @@ public class Scene {
 	boolean							drawGroundOrientation	= false;
 
 	private boolean					bgColorInversed			= false;
+	public static boolean			idle					= false;
 
 
 
@@ -95,6 +97,9 @@ public class Scene {
 		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_G)) {
 			drawGroundOrientation = !drawGroundOrientation;
 		}
+		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_F9)) {
+			idle = !idle;
+		}
 		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_V)) {
 			SimpleObjectViewer.toggleVsync();
 		}
@@ -137,9 +142,6 @@ public class Scene {
 		//glDisable(GL_DEPTH_TEST);
 
 
-		//		spriteShader.drawZSlice(camera.getViewMatrix(), 0f, 1f, particleField);
-		//		speedLineShader.drawZSlice(camera.getViewMatrix(), 0f, 1f, particleFieldSpeedLines);
-
 		for (float sliceIndex = 0; sliceIndex < NUMBER_OF_RENDER_SLICES; sliceIndex++) {
 			spriteShader.drawZSlice(camera.getViewMatrix(), sliceIndex / NUMBER_OF_RENDER_SLICES, (sliceIndex + 1) / NUMBER_OF_RENDER_SLICES, particleField);
 			speedLineShader.drawZSlice(camera.getViewMatrix(), sliceIndex / NUMBER_OF_RENDER_SLICES, (sliceIndex + 1) / NUMBER_OF_RENDER_SLICES, particleFieldSpeedLines);
@@ -155,8 +157,9 @@ public class Scene {
 		//			SyncUtil.sync(SimpleObjectViewer.refreshRate);
 		//		}
 
-		//		glAccum(GL_MULT, 0.8f);
-		//		glAccum(GL_ACCUM, 0.2f);
+
+		//		glAccum(GL_MULT, motionBlurStrength);
+		//		glAccum(GL_ACCUM, 1 - motionBlurStrength);
 		//		glAccum(GL_RETURN, 1);
 	}
 
