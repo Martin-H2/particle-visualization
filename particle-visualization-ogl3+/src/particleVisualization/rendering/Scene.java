@@ -37,7 +37,7 @@ public class Scene {
 	boolean							drawGroundOrientation	= false;
 
 	private boolean					bgColorInversed			= false;
-	public static boolean			idle					= false;
+	public static int				gpuMem					= 0;
 
 
 
@@ -80,6 +80,7 @@ public class Scene {
 
 
 	public void update() {
+		gpuMem = 0;
 		float scaleStep = SimpleObjectViewer.getFrameTimeMs() / 1000.0f;
 		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_PRINT_SCREEN)) {
 			ScreenshotUtil.savePngScreenShot();
@@ -97,15 +98,16 @@ public class Scene {
 		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_G)) {
 			drawGroundOrientation = !drawGroundOrientation;
 		}
-		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_F9)) {
-			idle = !idle;
-		}
+		//		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_F9)) {
+		//			idle = !idle;
+		//		}
 		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_V)) {
 			SimpleObjectViewer.toggleVsync();
 		}
 		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_B)) {
 			bgColorInversed = !bgColorInversed;
 			if (bgColorInversed) {
+				//setUniform4f(UniformName.globalColor, .4f, .4f, .8f, 1); //TODO cleanup
 				BG_COLOR.set(0.1f, 0.1f, 0.1f, 1.0f);
 			}
 			else {
@@ -123,6 +125,7 @@ public class Scene {
 
 		hud.update();
 		HeadUpDisplay.putDebugValue(HudDebugKeys.fps, SimpleObjectViewer.getFpsAvg());
+		HeadUpDisplay.putDebugValue(HudDebugKeys.frametime, SimpleObjectViewer.getFrameTimeAvgMs());
 		camera.update();
 		particleField.update(camera.getViewMatrix());
 		particleFieldSpeedLines.update();
@@ -148,6 +151,7 @@ public class Scene {
 		}
 
 
+		HeadUpDisplay.putDebugValue(HudDebugKeys.gpuMemMb, MiscUtils.round(gpuMem / 1024f / 1024f, 2));
 		hud.draw();
 
 		//		if (SimpleObjectViewer.isGlfwVsynced()) {

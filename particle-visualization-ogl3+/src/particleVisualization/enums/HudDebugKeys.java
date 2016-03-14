@@ -3,12 +3,15 @@ package particleVisualization.enums;
 public enum HudDebugKeys {
 
 	fps,
+	frametime,
+	gpuMemMb,
 	vSync,
 	dataFrameCount,
 	dataFrame,
 	dataFps,
 	particleCount,
 	numTailSegments,
+	particles,
 	numObjects,
 	camPos,
 	camRot,

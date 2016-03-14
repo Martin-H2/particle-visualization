@@ -18,7 +18,7 @@ public class MmpldData {
 
 	protected static int			maxFramesRead;
 	protected static final boolean	READ_PARALLEL		= true;
-	private static final int		MAX_BUFFERSIZE_MB	= 2000;
+	private static final int		MAX_BUFFERSIZE_MB	= 1000;
 	//private static final Logger log = Logger.getLogger( MmpldData.class.getName() );
 
 

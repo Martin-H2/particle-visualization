@@ -33,11 +33,14 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 	private final IntBuffer		startingIndicesList;
 	private final IntBuffer		numberOfverticesList;
 	private final ParticleField	particleField;
-	private final boolean		jumpCompensation		= true;
-	private final float			filterKernel			= 0.5f;
-	private float				speedlineTransparency	= 0.3f;
-	private float				textureFact				= 0.5f;
-	private float				textureYScale			= 1.0f;
+	private final boolean		jumpCompensation			= true;
+	private final float			filterKernel				= 0.5f;
+	private float				speedlineTransparency		= 0.3f;
+	private float				textureFact					= 0.5f;
+	private float				textureYScale				= 1.0f;
+	private final boolean		drawStaticClusterOverlay	= false;
+	int							vboId						= -1, oVboId = -1;
+
 
 	public ParticleFieldSpeedLines(ParticleField particleField, Texture texture) {
 		super(RenderMode.globalColored, texture);
@@ -52,13 +55,23 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 		staticSpeedLineOverlayBuffer = BufferUtils.createFloatBuffer(numSegments * 3);
 		staticSpeedLineOverlayLineStripOffsets = BufferUtils.createFloatBuffer(numSegments);
 
-		for (double segmentAngleRad = 0; segmentAngleRad < 2 * Math.PI; segmentAngleRad += 2 * Math.PI / numSegments) {
-			System.out.println("\nvertex: [ " + (Math.sin(segmentAngleRad) * radius + 200) + " / " + (Math.cos(segmentAngleRad) * radius + 200) + " / 100 ]");
-			System.out.println("index: " + segmentAngleRad / (2 * Math.PI));
-			staticSpeedLineOverlayBuffer.put((float) (Math.sin(segmentAngleRad) * radius + 205));
-			staticSpeedLineOverlayBuffer.put((float) (Math.cos(segmentAngleRad) * radius + 160));
+		//		for (double segmentAngleRad = 0; segmentAngleRad < 2 * Math.PI; segmentAngleRad += 2 * Math.PI / numSegments) {
+		//			//System.out.println("\nvertex: [ " + (Math.sin(segmentAngleRad) * radius + 200) + " / " + (Math.cos(segmentAngleRad) * radius + 200) + " / 100 ]");
+		//			float index = 1f - (float) (Math.sin(segmentAngleRad / 2) * 0.9);
+		//			//System.out.println("index: " + index);
+		//			staticSpeedLineOverlayBuffer.put((float) (Math.sin(segmentAngleRad) * radius + 205));
+		//			staticSpeedLineOverlayBuffer.put((float) (Math.cos(segmentAngleRad) * radius + 160));
+		//			staticSpeedLineOverlayBuffer.put(100);
+		//			staticSpeedLineOverlayLineStripOffsets.put(index);
+		//		}
+		for (float i = 0; i < 400; i += 400 / numSegments) {
+			//System.out.println("\nvertex: [ " + (Math.sin(segmentAngleRad) * radius + 200) + " / " + (Math.cos(segmentAngleRad) * radius + 200) + " / 100 ]");
+			float index = i / 400f;
+			//System.out.println("index: " + index);
+			staticSpeedLineOverlayBuffer.put(i);
+			staticSpeedLineOverlayBuffer.put(i);
 			staticSpeedLineOverlayBuffer.put(100);
-			staticSpeedLineOverlayLineStripOffsets.put((float) (segmentAngleRad / (2 * Math.PI)));
+			staticSpeedLineOverlayLineStripOffsets.put(index);
 		}
 
 		staticSpeedLineOverlayBuffer.flip();
@@ -93,15 +106,17 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 
 		int offsetCount = particleField.particlesPerFrame * (particleField.speedLineLength + 1) + particleField.particlesPerFrame;
 		//		System.out.println("FRAME_LAYOUT: " + MiscUtils.vertexLayoutToString(dataFrames.get(0), 3, 3));
-		if (lineStripOffsets == null || lineStripOffsets.capacity() < offsetCount) {
-			lineStripOffsets = BufferUtils.createFloatBuffer(offsetCount * 4);
-			System.out.println("#PFS.update.createFloatBuffer !");
+		if (!ParticleField.persistentMode) {
+			if (lineStripOffsets == null || lineStripOffsets.capacity() < offsetCount) {
+				lineStripOffsets = BufferUtils.createFloatBuffer(offsetCount * 4);
+				System.out.println("#PFS.update.createFloatBuffer !");
+			}
+			speedLineBuffer = VertexSorter.frameLayoutToSpeedlineLayout(particleField.dataFrames, particleField.currentFrameIndex,
+					particleField.speedLineLength + 1, 0, particleField.maxParticlesDisplayed, speedLineBuffer, lineStripOffsets, startingIndicesList,
+					numberOfverticesList, jumpCompensation, filterKernel, particleField.getJumpThresholds());
+			//		System.out.println("SLINE_LAYOUT: " + MiscUtils.vertexLayoutToString(speedLineBuffer, 3, 3) + "  speedLineLength:" + speedLineLength);
+			//		System.out.println("startingIndicesArray: " + startingIndicesList.toString());
 		}
-		speedLineBuffer = VertexSorter.frameLayoutToSpeedlineLayout(particleField.dataFrames, particleField.currentFrameIndex,
-				particleField.speedLineLength + 1, 0, particleField.maxParticlesDisplayed, speedLineBuffer, lineStripOffsets, startingIndicesList,
-				numberOfverticesList, jumpCompensation, filterKernel, particleField.getJumpThresholds());
-		//		System.out.println("SLINE_LAYOUT: " + MiscUtils.vertexLayoutToString(speedLineBuffer, 3, 3) + "  speedLineLength:" + speedLineLength);
-		//		System.out.println("startingIndicesArray: " + startingIndicesList.toString());
 	}
 
 	@Override
@@ -116,19 +131,29 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 
 	@Override
 	protected void drawVao(Shader shader, float startFraction, float countFraction) {
-		int vboId, oVboId;
 		if (particleField.speedLineLength > 0) {
+			boolean recreateBuffers = vboId == -1 || oVboId == -1 || !ParticleField.persistentMode;
 
-			vboId = glGenBuffers();
+			if (recreateBuffers) {
+				glDeleteBuffers(vboId);
+				vboId = glGenBuffers();
+			}
 			glBindBuffer(GL_ARRAY_BUFFER, vboId);
-			glBufferData(GL_ARRAY_BUFFER, speedLineBuffer, GL_STREAM_DRAW);
+			if (recreateBuffers) {
+				glBufferData(GL_ARRAY_BUFFER, speedLineBuffer, GL_STATIC_DRAW);
+			}
 			glVertexAttribPointer(ShaderLayout.in_Position.ordinal(), 3, GL_FLOAT, false, 0, 0);
 			glEnableVertexAttribArray(ShaderLayout.in_Position.ordinal());
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-			oVboId = glGenBuffers();
+			if (recreateBuffers) {
+				glDeleteBuffers(oVboId);
+				oVboId = glGenBuffers();
+			}
 			glBindBuffer(GL_ARRAY_BUFFER, oVboId);
-			glBufferData(GL_ARRAY_BUFFER, lineStripOffsets, GL_STREAM_DRAW);
+			if (recreateBuffers) {
+				glBufferData(GL_ARRAY_BUFFER, lineStripOffsets, GL_STATIC_DRAW);
+			}
 			glVertexAttribPointer(ShaderLayout.in_Offset.ordinal(), 1, GL_FLOAT, false, 0, 0);
 			glEnableVertexAttribArray(ShaderLayout.in_Offset.ordinal());
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -139,34 +164,36 @@ public class ParticleFieldSpeedLines extends DrawableEntity {
 			startingIndicesList.limit((int) (particleField.maxParticlesDisplayed * countFraction));
 			numberOfverticesList.limit((int) (particleField.maxParticlesDisplayed * countFraction));
 
+			Scene.gpuMem += 4 * (speedLineBuffer.capacity() + lineStripOffsets.capacity() + startingIndicesList.remaining() + numberOfverticesList.remaining());
 
 			GL14.glMultiDrawArrays(GL32.GL_LINE_STRIP_ADJACENCY, startingIndicesList, numberOfverticesList);
+
+		}
+
+
+		if (drawStaticClusterOverlay) {
+
+			shader.setUniform1f(UniformName.spriteSize, 0.1f);
+
+			vboId = glGenBuffers();
+			glBindBuffer(GL_ARRAY_BUFFER, vboId);
+			glBufferData(GL_ARRAY_BUFFER, staticSpeedLineOverlayBuffer, GL_STREAM_DRAW);
+			glVertexAttribPointer(ShaderLayout.in_Position.ordinal(), 3, GL_FLOAT, false, 0, 0);
+			glEnableVertexAttribArray(ShaderLayout.in_Position.ordinal());
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			oVboId = glGenBuffers();
+			glBindBuffer(GL_ARRAY_BUFFER, oVboId);
+			glBufferData(GL_ARRAY_BUFFER, staticSpeedLineOverlayLineStripOffsets, GL_STREAM_DRAW);
+			glVertexAttribPointer(ShaderLayout.in_Offset.ordinal(), 1, GL_FLOAT, false, 0, 0);
+			glEnableVertexAttribArray(ShaderLayout.in_Offset.ordinal());
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			GL11.glDrawArrays(GL32.GL_LINE_STRIP_ADJACENCY, 0, staticSpeedLineOverlayLineStripOffsets.capacity());
 
 			glDeleteBuffers(vboId);
 			glDeleteBuffers(oVboId);
 		}
-
-		//TODO
-		shader.setUniform1f(UniformName.spriteSize, 0.1f);
-
-		vboId = glGenBuffers();
-		glBindBuffer(GL_ARRAY_BUFFER, vboId);
-		glBufferData(GL_ARRAY_BUFFER, staticSpeedLineOverlayBuffer, GL_STREAM_DRAW);
-		glVertexAttribPointer(ShaderLayout.in_Position.ordinal(), 3, GL_FLOAT, false, 0, 0);
-		glEnableVertexAttribArray(ShaderLayout.in_Position.ordinal());
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		oVboId = glGenBuffers();
-		glBindBuffer(GL_ARRAY_BUFFER, oVboId);
-		glBufferData(GL_ARRAY_BUFFER, staticSpeedLineOverlayLineStripOffsets, GL_STREAM_DRAW);
-		glVertexAttribPointer(ShaderLayout.in_Offset.ordinal(), 1, GL_FLOAT, false, 0, 0);
-		glEnableVertexAttribArray(ShaderLayout.in_Offset.ordinal());
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-		GL11.glDrawArrays(GL32.GL_LINE_STRIP_ADJACENCY, 0, staticSpeedLineOverlayLineStripOffsets.capacity());
-
-		glDeleteBuffers(vboId);
-		glDeleteBuffers(oVboId);
 
 
 	}

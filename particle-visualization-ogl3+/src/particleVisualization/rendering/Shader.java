@@ -47,7 +47,7 @@ public class Shader {
 		setTextureUnitId(textureUnitId);
 		setRenderMode(RenderMode.textured);
 		setUniform2f(UniformName.screenSize, SimpleObjectViewer.windowWidth, SimpleObjectViewer.windowHeight);
-		setUniform4f(UniformName.globalColor, .4f, .4f, .8f, 1); //TODO cleanup
+		setUniform4f(UniformName.globalColor, .8f, .4f, .4f, 1); //TODO cleanup
 		setUniform4f(UniformName.fogColor, Scene.BG_COLOR);
 		setUniform1f(UniformName.fogDensity, Scene.FOG_DENSITY);
 		setUniform4f(UniformName.bboxColor, .7f, .65f, .5f, .9f);
@@ -109,7 +109,7 @@ public class Shader {
 		}
 	}
 
-	private void setUniform4f(UniformName uniform, float f1, float f2, float f3, float f4) {
+	void setUniform4f(UniformName uniform, float f1, float f2, float f3, float f4) {
 		if (perShaderUniformLocations.get(uniform) != null) {
 			glUniform4f(perShaderUniformLocations.get(uniform), f1, f2, f3, f4);
 		}

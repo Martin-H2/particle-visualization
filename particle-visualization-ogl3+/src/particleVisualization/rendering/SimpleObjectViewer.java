@@ -145,6 +145,10 @@ public class SimpleObjectViewer {
 		return frameTimeMs;
 	}
 
+	public static float getFrameTimeAvgMs() {
+		return 1 / fpsAvg * 1000;
+	}
+
 	public static void centerMouse() {
 		glfwSetCursorPos(windowId, windowWidth / 2d, windowHeight / 2d);
 	}
@@ -169,6 +173,7 @@ public class SimpleObjectViewer {
 	public static void toggleVsync() {
 		vSync = !vSync;
 		glfwSwapInterval(isGlfwVsynced() ? 1 : 0);
+		System.out.println("isGlfwVsynced: " + isGlfwVsynced());
 	}
 
 	public static boolean isGlfwVsynced() {

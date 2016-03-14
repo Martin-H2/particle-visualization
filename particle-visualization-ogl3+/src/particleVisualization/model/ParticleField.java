@@ -56,6 +56,7 @@ public class ParticleField extends DrawableEntity {
 	private int					vboId;
 	private int					colorVboId;
 	private int					numTriangleLastFrame	= 0;
+	public static boolean		persistentMode			= false;
 
 
 
@@ -91,30 +92,41 @@ public class ParticleField extends DrawableEntity {
 
 	@Override
 	protected void drawVao(Shader shader, float startFraction, float countFraction) {
+		boolean recreateBuffers = vboId == -1 || colorVboId == -1 || !ParticleField.persistentMode;
 		//vertexArrayObject.drawIndirect();
 		//vertexArrayObject.draw(currentFrameIndex * particlesPerFrame, maxParticlesDisplayed, true);
 		//			shader.setUniform1f(UniformName.spriteSize, 0.04f);
 
-		//if (!Scene.idle)
-		vboId = glGenBuffers();
+		if (recreateBuffers) {
+			glDeleteBuffers(vboId);
+			vboId = glGenBuffers();
+		}
 		glBindBuffer(GL_ARRAY_BUFFER, vboId);
-		glBufferData(GL_ARRAY_BUFFER, particleBuffer, GL_STREAM_DRAW);
+		if (recreateBuffers) {
+			glBufferData(GL_ARRAY_BUFFER, particleBuffer, GL_STREAM_DRAW);
+		}
 		glVertexAttribPointer(ShaderLayout.in_Position.ordinal(), 3, GL_FLOAT, false, 0, 0);
 		glEnableVertexAttribArray(ShaderLayout.in_Position.ordinal());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		colorVboId = glGenBuffers();
+		if (recreateBuffers) {
+			glDeleteBuffers(colorVboId);
+			colorVboId = glGenBuffers();
+		}
 		glBindBuffer(GL_ARRAY_BUFFER, colorVboId);
-		glBufferData(GL_ARRAY_BUFFER, particleColorBuffer, GL_STREAM_DRAW);
+		if (recreateBuffers) {
+			glBufferData(GL_ARRAY_BUFFER, particleColorBuffer, GL_STREAM_DRAW);
+		}
 		glVertexAttribPointer(ShaderLayout.in_Color.ordinal(), 4, GL11.GL_UNSIGNED_BYTE, true, 0, 0);
 		glEnableVertexAttribArray(ShaderLayout.in_Color.ordinal());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 		int start = (int) (maxParticlesDisplayed * startFraction);
-		glDrawArrays(GL_POINTS, start, (int) (maxParticlesDisplayed * countFraction) - start);
+		int count = (int) (maxParticlesDisplayed * countFraction) - start;
+		Scene.gpuMem += count * 16;
+		//System.out.println(count);
+		glDrawArrays(GL_POINTS, start, count);
 
-		glDeleteBuffers(vboId);
-		glDeleteBuffers(colorVboId);
 
 
 	}
@@ -129,6 +141,10 @@ public class ParticleField extends DrawableEntity {
 	}
 
 	public void update(Matrix4f viewMatrix) {
+		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_P)) {
+			ParticleField.persistentMode = !ParticleField.persistentMode;
+		}
+
 		//		if (dataFrames.size() > uploadedFrames) {
 		//			vertexArrayObject.appendPositionAndColorData(dataFrames.get(uploadedFrames), particleData.isColorDataSet() ? dataFramesColors.get(uploadedFrames) : null);
 		//			uploadedFrames++;
@@ -145,11 +161,13 @@ public class ParticleField extends DrawableEntity {
 		float scaleStep = SimpleObjectViewer.getFrameTimeMs() / 1000.0f;
 
 
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_KP_ADD) && numTriangleLastFrame < 10000000) {
-			maxParticlesDisplayedF = maxParticlesDisplayedF * (1 + 2 * scaleStep) + 10 * scaleStep;
+		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_KP_ADD) && numTriangleLastFrame < 10000000) {
+			//maxParticlesDisplayedF = maxParticlesDisplayedF * (1 + 2 * scaleStep) + 10 * scaleStep;
+			maxParticlesDisplayedF = (Math.round(maxParticlesDisplayedF / 1000) + 4) * 1000;
 		}
-		if (InputManager.isKeyDown(GLFW.GLFW_KEY_KP_SUBTRACT)) {
-			maxParticlesDisplayedF = maxParticlesDisplayedF * (1 - 2 * scaleStep) - 10 * scaleStep;
+		if (InputManager.isKeyDownEvent(GLFW.GLFW_KEY_KP_SUBTRACT)) {
+			//			maxParticlesDisplayedF = maxParticlesDisplayedF * (1 - 2 * scaleStep) - 10 * scaleStep;
+			maxParticlesDisplayedF = (Math.round(maxParticlesDisplayedF / 1000) - 4) * 1000;
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_N)) {
 			scaleClippedX(1 + scaleStep);
@@ -164,9 +182,11 @@ public class ParticleField extends DrawableEntity {
 			scaleClipped(1 - scaleStep);
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_F) && numTriangleLastFrame < 10000000 && speedLineLength < 300) {
+			// speedLineLengthF += 4;
 			speedLineLengthF = speedLineLengthF * (1 + scaleStep) + 10 * scaleStep;
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_C)) {
+			// speedLineLengthF -= 4;
 			speedLineLengthF = speedLineLengthF * (1 - scaleStep) - 10 * scaleStep;
 		}
 		if (InputManager.isKeyDown(GLFW.GLFW_KEY_X)) {
@@ -217,9 +237,11 @@ public class ParticleField extends DrawableEntity {
 
 
 		Matrix4f.mul(viewMatrix, getUpdatedModelMatrix(), modelViewMatrix);
-		VertexSorter.generateSortingIndices(dataFrames.get(currentFrameIndex), maxParticlesDisplayed, modelViewMatrix);
-		particleBuffer = VertexSorter.fillParticleBuffer(dataFrames, currentFrameIndex, maxParticlesDisplayed, particleBuffer);
-		particleColorBuffer = VertexSorter.fillParticleColorBuffer(dataFramesColors, currentFrameIndex, maxParticlesDisplayed, particleColorBuffer);
+		if (!ParticleField.persistentMode) {
+			VertexSorter.generateSortingIndices(dataFrames.get(currentFrameIndex), maxParticlesDisplayed, modelViewMatrix);
+			particleBuffer = VertexSorter.fillParticleBuffer(dataFrames, currentFrameIndex, maxParticlesDisplayed, particleBuffer);
+			particleColorBuffer = VertexSorter.fillParticleColorBuffer(dataFramesColors, currentFrameIndex, maxParticlesDisplayed, particleColorBuffer);
+		}
 
 
 		// HUD
@@ -229,6 +251,7 @@ public class ParticleField extends DrawableEntity {
 		HeadUpDisplay.putDebugValue(HudDebugKeys.dataFrameCount, dataFrames.size());
 		HeadUpDisplay.putDebugValue(HudDebugKeys.numTailSegments, speedLineLength);
 		HeadUpDisplay.putDebugValue(HudDebugKeys.numObjects, numTriangleLastFrame);
+		HeadUpDisplay.putDebugValue(HudDebugKeys.particles, maxParticlesDisplayed);
 	}
 
 
